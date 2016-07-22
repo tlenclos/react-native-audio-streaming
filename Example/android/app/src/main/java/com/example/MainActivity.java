@@ -1,7 +1,6 @@
 package com.example;
 
 import com.facebook.react.ReactActivity;
-import com.reactlibrary.RNReactNativeAndroidStreamingPackage;
 
 public class MainActivity extends ReactActivity {
 

@@ -1,22 +1,22 @@
 
-# react-native-react-native-android-streaming
+# react-native-audio-streaming
 
 ## Features
 
 - Background audio streaming of remote stream
 - Control via sticky notification on android and media center on iOS
 - Shoutcast/Icy meta data support
-- Simple UI player component
+- Simple UI player component (if needed, an api to control the sound is available)
 
 ![Demo iOS](https://raw.githubusercontent.com/tlenclos/react-native-audio-streaming/master/demo_ios.gif)
 
 ## Getting started
 
-`$ npm install react-native-react-native-android-streaming --save`
+`$ npm install react-native-audio-streaming --save`
 
 ### Mostly automatic installation
 
-`$ react-native link react-native-react-native-android-streaming`
+`$ react-native link react-native-audio-streaming`
 
 ### Manual installation
 
