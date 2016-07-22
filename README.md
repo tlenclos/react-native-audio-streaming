@@ -8,6 +8,8 @@
 - Shoutcast/Icy meta data support
 - Simple UI player component
 
+![Demo iOS](https://raw.githubusercontent.com/tlenclos/react-native-audio-streaming/master/demo_ios.gif)
+
 ## Getting started
 
 `$ npm install react-native-react-native-android-streaming --save`

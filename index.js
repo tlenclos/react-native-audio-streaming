@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingRight: 10,
         borderColor: '#000033',
-        borderWidth: 1,
+        borderTopWidth: 1,
     },
     icon: {
         color: '#000',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         width: iconSize,
         height: iconSize,
         textAlign: 'center',
-        paddingTop: 8
+        paddingTop: 10
     },
     textContainer: {
         flexDirection: 'column',
