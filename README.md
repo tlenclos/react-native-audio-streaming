@@ -23,38 +23,45 @@
 #### iOS
 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `react-native-react-native-android-streaming` and add `RNReactNativeAndroidStreaming.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNReactNativeAndroidStreaming.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
+2. Go to `node_modules` ➜ `react-native-audio-streaming` and add `ReactNativeAudioStreaming.xcodeproj`
+3. In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)<
 
 #### Android
 
 1. Open up `android/app/src/main/java/[...]/MainActivity.java`
-  - Add `import com.reactlibrary.RNReactNativeAndroidStreamingPackage;` to the imports at the top of the file
-  - Add `new RNReactNativeAndroidStreamingPackage()` to the list returned by the `getPackages()` method
+  - Add `import com.reactlibrary.ReactNativeAudioStreamingPackage;` to the imports at the top of the file
+  - Add `new ReactNativeAudioStreamingPackage()` to the list returned by the `getPackages()` method
 2. Append the following lines to `android/settings.gradle`:
   	```
-  	include ':react-native-react-native-android-streaming'
-  	project(':react-native-react-native-android-streaming').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-react-native-android-streaming/android')
+  	include ':react-native-audio-streaming'
+  	project(':react-native-audio-streaming').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-audio-streaming/android')
   	```
 3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
   	```
-      compile project(':react-native-react-native-android-streaming')
+      compile project(':react-native-audio-streaming')
   	```
 
 
 ## Usage
-```javascript
-import RNReactNativeAndroidStreaming from 'react-native-react-native-android-streaming';
 
-// TODO: What do with the module?
-RNReactNativeAndroidStreaming;
+```javascript
+import ReactNativeAudioStreaming from 'react-native-audio-streaming';
+
+ReactNativeAudioStreaming;
 ```
-  
+
  
 ## TODO
 
 - [ ] Improve installation of the libs
+- [ ] Same API for android & iOS
+- [ ] Allow to specify custom style for the android notification (maybe a custom view ?)
 - [ ] Allow to specify custom styles for the player
 - [ ] Handle artwork of artist
 - [ ] Add tests
+
+## Credits
+
+- Android version based on the work of @EstebanFuentealba https://github.com/EstebanFuentealba/react-native-android-audio-streaming-aac
+- iOS version based on the work of @jhabdas https://github.com/jhabdas/lumpen-radio

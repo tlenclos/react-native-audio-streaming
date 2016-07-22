@@ -11,6 +11,9 @@ import {
   Text,
   View
 } from 'react-native';
+import { RNReactNativeAudioStreaming, Player } from 'react-native-audio-streaming';
+
+const url = 'http://lacavewebradio.chickenkiller.com:8000/stream.mp3';
 
 class Example extends Component {
   render() {
@@ -26,6 +29,8 @@ class Example extends Component {
           Double tap R on your keyboard to reload,{'\n'}
           Shake or press menu button for dev menu
         </Text>
+
+        <Player url={url} />
       </View>
     );
   }

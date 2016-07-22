@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:padding = "5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000">
+        <ImageView
+            android:id="@+id/streaming_icon"
+            android:layout_width="40dp"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:src="@android:drawable/ic_lock_silent_mode_off"
+            android:layout_marginRight="10dp"
+        />
+        <RelativeLayout
+            android:layout_width = "match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/streaming_icon"
+            android:background="#000">
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+                <ImageButton
+                    android:id="@+id/btn_streaming_notification_play"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="5dp"
+                    android:src="@android:drawable/ic_media_play" />
+                <ImageButton
+                    android:id="@+id/btn_streaming_notification_stop"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_toRightOf="@+id/btn_streaming_notification_play"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="10dp"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel" />
+                <TextView
+                    android:id="@+id/song_name_notification"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="left|center_vertical"
+                    android:textAlignment="gravity"
+                    android:textColor="#fff"
+                    />
+            </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
