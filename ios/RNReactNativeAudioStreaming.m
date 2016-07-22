@@ -299,9 +299,7 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 - (MPRemoteCommandHandlerStatus)didReceivePlayCommand:(MPRemoteCommand *)event
 {
    NSLog(@"didReceivePlayCommand");
-   if (self.audioPlayer.state == STKAudioPlayerStatePaused) {
-      [self.audioPlayer resume];
-   }
+   [self resume];
    return MPRemoteCommandHandlerStatusSuccess;
 }
 
@@ -323,9 +321,12 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 {
    // TODO Get artwork from stream
    // MPMediaItemArtwork *artwork = [[MPMediaItemArtwork alloc]initWithImage:[UIImage imageNamed:@"webradio1"]];
+   
+   NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"];
    NSDictionary *nowPlayingInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                                    self.currentSong, MPMediaItemPropertyAlbumTitle,
-                                   [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"], MPMediaItemPropertyTitle,
+                                   @"", MPMediaItemPropertyAlbumArtist,
+                                   appName ? appName : @"", MPMediaItemPropertyTitle,
                                    [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
    [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
 }
