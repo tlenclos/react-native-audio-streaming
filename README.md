@@ -1,6 +1,13 @@
 
 # react-native-react-native-android-streaming
 
+## Features
+
+- Background audio streaming of remote stream
+- Control via sticky notification on android and media center on iOS
+- Shoutcast/Icy meta data support
+- Simple UI player component
+
 ## Getting started
 
 `$ npm install react-native-react-native-android-streaming --save`
@@ -10,7 +17,6 @@
 `$ react-native link react-native-react-native-android-streaming`
 
 ### Manual installation
-
 
 #### iOS
 
@@ -34,14 +40,6 @@
       compile project(':react-native-react-native-android-streaming')
   	```
 
-#### Windows
-[Read it! :D](https://github.com/ReactWindows/react-native)
-
-1. In Visual Studio add the `RNReactNativeAndroidStreaming.sln` in `node_modules/react-native-react-native-android-streaming/windows/RNReactNativeAndroidStreaming.sln` folder to their solution, reference from their app.
-2. Open up your `MainPage.cs` app
-  - Add `using Cl.Json.RNReactNativeAndroidStreaming;` to the usings at the top of the file
-  - Add `new RNReactNativeAndroidStreamingPackage()` to the `List<IReactPackage>` returned by the `Packages` method
-      
 
 ## Usage
 ```javascript
@@ -51,3 +49,10 @@ import RNReactNativeAndroidStreaming from 'react-native-react-native-android-str
 RNReactNativeAndroidStreaming;
 ```
   
+ 
+## TODO
+
+- [ ] Improve installation of the libs
+- [ ] Allow to specify custom styles for the player
+- [ ] Handle artwork of artist
+- [ ] Add tests

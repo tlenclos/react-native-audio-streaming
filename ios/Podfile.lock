@@ -1,0 +1,22 @@
+PODS:
+  - StreamingKit (0.1.29)
+
+DEPENDENCIES:
+  - StreamingKit (from `https://github.com/tlenclos/StreamingKit.git`, branch `icecast`)
+
+EXTERNAL SOURCES:
+  StreamingKit:
+    :branch: icecast
+    :git: https://github.com/tlenclos/StreamingKit.git
+
+CHECKOUT OPTIONS:
+  StreamingKit:
+    :commit: c52d60bee8776e9aa36b3975d9ef78a9dcf74a26
+    :git: https://github.com/tlenclos/StreamingKit.git
+
+SPEC CHECKSUMS:
+  StreamingKit: c329785aaef3ac142d4ae388345bfe1ed23cfd45
+
+PODFILE CHECKSUM: 02c3a13056b7104043f3a3cc3dba2b7b8bda936d
+
+COCOAPODS: 1.0.1

@@ -6,7 +6,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 
-public class RNReactNativeAndroidStreamingModule extends ReactContextBaseJavaModule {
+public class RNReactNativeAudioStreamingModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
 
@@ -17,6 +17,6 @@ public class RNReactNativeAndroidStreamingModule extends ReactContextBaseJavaMod
 
   @Override
   public String getName() {
-    return "RNReactNativeAndroidStreaming";
+    return "RNReactNativeAudioStreaming";
   }
 }

@@ -1,0 +1,3 @@
+target 'RNReactNativeAudioStreaming' do
+  pod 'StreamingKit', :git => 'https://github.com/tlenclos/StreamingKit.git', :branch => 'icecast'
+end
