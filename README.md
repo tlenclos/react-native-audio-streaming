@@ -45,13 +45,38 @@
 
 ## Usage
 
-```javascript
-import ReactNativeAudioStreaming from 'react-native-audio-streaming';
+### Playing sound (similar code used by the player UI)
 
-ReactNativeAudioStreaming;
+```javascript
+import { ReactNativeAudioStreamingModule } from 'react-native-audio-streaming';
+
+const url = "http://lacavewebradio.chickenkiller.com:8000/stream.mp3";
+if (Platform.os != 'ios') {
+    ReactNativeAudioStreamingModule.setURLStreaming(url);
+}
+
+ReactNativeAudioStreamingModule.pause();
+ReactNativeAudioStreamingModule.resume();
+ReactNativeAudioStreamingModule.play(url);
+ReactNativeAudioStreamingModule.stop();
 ```
 
- 
+For more information see the Example app.
+
+### Player UI
+
+```javascript
+import { Player } from 'react-native-audio-streaming';
+
+class PlayerUI extends Component {
+  render() {
+    return (
+        <Player url={"http://lacavewebradio.chickenkiller.com:8000/stream.mp3"} />
+    );
+  }
+}
+```
+
 ## TODO
 
 - [ ] Improve installation of the libs
