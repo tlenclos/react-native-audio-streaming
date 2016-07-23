@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B373FFE98845B2D1314A3781 /* libPods-RNReactNativeAudioStreaming.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 91DC21B643C099A2FDEC8C29 /* libPods-RNReactNativeAudioStreaming.a */; };
-		B3E7B58A1CC2AC0600A0062D /* RNReactNativeAudioStreaming.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNReactNativeAudioStreaming.m */; };
+		371E75E88603E89B771F475C /* libPods-ReactNativeAudioStreaming.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B3DA42824085CFA56B54771 /* libPods-ReactNativeAudioStreaming.a */; };
+		B3E7B58A1CC2AC0600A0062D /* ReactNativeAudioStreaming.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* ReactNativeAudioStreaming.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,12 +24,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		134814201AA4EA6300B7C361 /* libRNReactNativeAudioStreaming.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNReactNativeAudioStreaming.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		5F435916B5BD3EDA2BE68969 /* Pods-RNReactNativeAudioStreaming.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNReactNativeAudioStreaming.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RNReactNativeAudioStreaming/Pods-RNReactNativeAudioStreaming.debug.xcconfig"; sourceTree = "<group>"; };
-		91DC21B643C099A2FDEC8C29 /* libPods-RNReactNativeAudioStreaming.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNReactNativeAudioStreaming.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B3E7B5881CC2AC0600A0062D /* RNReactNativeAudioStreaming.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNReactNativeAudioStreaming.h; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* RNReactNativeAudioStreaming.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNReactNativeAudioStreaming.m; sourceTree = "<group>"; };
-		C63CC17D1E12A59C3291AD66 /* Pods-RNReactNativeAudioStreaming.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNReactNativeAudioStreaming.release.xcconfig"; path = "Pods/Target Support Files/Pods-RNReactNativeAudioStreaming/Pods-RNReactNativeAudioStreaming.release.xcconfig"; sourceTree = "<group>"; };
+		134814201AA4EA6300B7C361 /* libReactNativeAudioStreaming.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libReactNativeAudioStreaming.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B3DA42824085CFA56B54771 /* libPods-ReactNativeAudioStreaming.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeAudioStreaming.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7108DD9C69A621BE945F3B0B /* Pods-ReactNativeAudioStreaming.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeAudioStreaming.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ReactNativeAudioStreaming/Pods-ReactNativeAudioStreaming.debug.xcconfig"; sourceTree = "<group>"; };
+		B3E7B5881CC2AC0600A0062D /* ReactNativeAudioStreaming.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReactNativeAudioStreaming.h; sourceTree = "<group>"; };
+		B3E7B5891CC2AC0600A0062D /* ReactNativeAudioStreaming.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReactNativeAudioStreaming.m; sourceTree = "<group>"; };
+		B78EDA91B740BE8613FB546C /* Pods-ReactNativeAudioStreaming.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeAudioStreaming.release.xcconfig"; path = "Pods/Target Support Files/Pods-ReactNativeAudioStreaming/Pods-ReactNativeAudioStreaming.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,46 +37,46 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B373FFE98845B2D1314A3781 /* libPods-RNReactNativeAudioStreaming.a in Frameworks */,
+				371E75E88603E89B771F475C /* libPods-ReactNativeAudioStreaming.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0EDFA4144B2AEA3EAF68F078 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B3DA42824085CFA56B54771 /* libPods-ReactNativeAudioStreaming.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		134814211AA4EA7D00B7C361 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				134814201AA4EA6300B7C361 /* libRNReactNativeAudioStreaming.a */,
+				134814201AA4EA6300B7C361 /* libReactNativeAudioStreaming.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		1D5227FA72B286FC6AAEE8D6 /* Pods */ = {
+		2B5F933D7893421053AABADB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5F435916B5BD3EDA2BE68969 /* Pods-RNReactNativeAudioStreaming.debug.xcconfig */,
-				C63CC17D1E12A59C3291AD66 /* Pods-RNReactNativeAudioStreaming.release.xcconfig */,
+				7108DD9C69A621BE945F3B0B /* Pods-ReactNativeAudioStreaming.debug.xcconfig */,
+				B78EDA91B740BE8613FB546C /* Pods-ReactNativeAudioStreaming.release.xcconfig */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		4EDFB95C429B37DF2AC48C98 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				91DC21B643C099A2FDEC8C29 /* libPods-RNReactNativeAudioStreaming.a */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				B3E7B5881CC2AC0600A0062D /* RNReactNativeAudioStreaming.h */,
-				B3E7B5891CC2AC0600A0062D /* RNReactNativeAudioStreaming.m */,
+				B3E7B5881CC2AC0600A0062D /* ReactNativeAudioStreaming.h */,
+				B3E7B5891CC2AC0600A0062D /* ReactNativeAudioStreaming.m */,
 				134814211AA4EA7D00B7C361 /* Products */,
-				1D5227FA72B286FC6AAEE8D6 /* Pods */,
-				4EDFB95C429B37DF2AC48C98 /* Frameworks */,
+				2B5F933D7893421053AABADB /* Pods */,
+				0EDFA4144B2AEA3EAF68F078 /* Frameworks */,
 			);
 			indentWidth = 3;
 			sourceTree = "<group>";
@@ -84,9 +84,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		58B511DA1A9E6C8500147676 /* RNReactNativeAudioStreaming */ = {
+		58B511DA1A9E6C8500147676 /* ReactNativeAudioStreaming */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "RNReactNativeAudioStreaming" */;
+			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "ReactNativeAudioStreaming" */;
 			buildPhases = (
 				6A5A7DA9C256587FECF17D9A /* [CP] Check Pods Manifest.lock */,
 				58B511D71A9E6C8500147676 /* Sources */,
@@ -98,9 +98,9 @@
 			);
 			dependencies = (
 			);
-			name = RNReactNativeAudioStreaming;
+			name = ReactNativeAudioStreaming;
 			productName = RCTDataManager;
-			productReference = 134814201AA4EA6300B7C361 /* libRNReactNativeAudioStreaming.a */;
+			productReference = 134814201AA4EA6300B7C361 /* libReactNativeAudioStreaming.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -117,7 +117,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "RNReactNativeAudioStreaming" */;
+			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "ReactNativeAudioStreaming" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -129,7 +129,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				58B511DA1A9E6C8500147676 /* RNReactNativeAudioStreaming */,
+				58B511DA1A9E6C8500147676 /* ReactNativeAudioStreaming */,
 			);
 		};
 /* End PBXProject section */
@@ -162,7 +162,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-RNReactNativeAudioStreaming/Pods-RNReactNativeAudioStreaming-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ReactNativeAudioStreaming/Pods-ReactNativeAudioStreaming-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -172,7 +172,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3E7B58A1CC2AC0600A0062D /* RNReactNativeAudioStreaming.m in Sources */,
+				B3E7B58A1CC2AC0600A0062D /* ReactNativeAudioStreaming.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,7 +256,7 @@
 		};
 		58B511F01A9E6C8500147676 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5F435916B5BD3EDA2BE68969 /* Pods-RNReactNativeAudioStreaming.debug.xcconfig */;
+			baseConfigurationReference = 7108DD9C69A621BE945F3B0B /* Pods-ReactNativeAudioStreaming.debug.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -267,14 +267,14 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
-				PRODUCT_NAME = RNReactNativeAudioStreaming;
+				PRODUCT_NAME = ReactNativeAudioStreaming;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
 		58B511F11A9E6C8500147676 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C63CC17D1E12A59C3291AD66 /* Pods-RNReactNativeAudioStreaming.release.xcconfig */;
+			baseConfigurationReference = B78EDA91B740BE8613FB546C /* Pods-ReactNativeAudioStreaming.release.xcconfig */;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -285,7 +285,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
-				PRODUCT_NAME = RNReactNativeAudioStreaming;
+				PRODUCT_NAME = ReactNativeAudioStreaming;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -293,7 +293,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "RNReactNativeAudioStreaming" */ = {
+		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "ReactNativeAudioStreaming" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511ED1A9E6C8500147676 /* Debug */,
@@ -302,7 +302,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "RNReactNativeAudioStreaming" */ = {
+		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "ReactNativeAudioStreaming" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511F01A9E6C8500147676 /* Debug */,

@@ -11,7 +11,7 @@ import {
   Text,
   View
 } from 'react-native';
-import { RNReactNativeAudioStreaming, Player } from 'react-native-audio-streaming';
+import { ReactNativeAudioStreaming, Player } from 'react-native-audio-streaming';
 
 const url = 'http://lacavewebradio.chickenkiller.com:8000/stream.mp3';
 

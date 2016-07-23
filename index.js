@@ -9,7 +9,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 
-const { RNReactNativeAudioStreaming } = NativeModules;
+const { ReactNativeAudioStreaming } = NativeModules;
 
 // Possibles states
 const PLAYING = 'PLAYING';
@@ -46,7 +46,7 @@ class Player extends Component {
             }
         );
 
-        RNReactNativeAudioStreaming.getStatus((error, status) => {
+        ReactNativeAudioStreaming.getStatus((error, status) => {
             (error) ? console.log(error) : this.setState(status)
         });
     }
@@ -54,17 +54,17 @@ class Player extends Component {
     _onPress() {
         switch (this.state.status) {
             case PLAYING:
-                RNReactNativeAudioStreaming.pause();
+                ReactNativeAudioStreaming.pause();
                 break;
             case PAUSED:
-                RNReactNativeAudioStreaming.resume();
+                ReactNativeAudioStreaming.resume();
                 break;
             case STOPPED:
             case ERROR:
-                RNReactNativeAudioStreaming.play(this.props.url);
+                ReactNativeAudioStreaming.play(this.props.url);
                 break;
             case BUFFERING:
-                RNReactNativeAudioStreaming.stop();
+                ReactNativeAudioStreaming.stop();
                 break;
         }
     }
@@ -146,4 +146,4 @@ Player.propTypes = {
     url: React.PropTypes.string.isRequired
 };
 
-export { Player, RNReactNativeAudioStreaming }
+export { Player, ReactNativeAudioStreaming }

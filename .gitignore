@@ -23,6 +23,7 @@ xcuserdata/
 ## Other
 *.moved-aside
 *.xcuserstate
+*.xcworkspacedata
 
 ## Obj-C/Swift specific
 *.hmap
@@ -61,5 +62,3 @@ fastlane/screenshots
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
-
-ios/Pods

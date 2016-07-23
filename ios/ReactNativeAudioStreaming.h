@@ -4,7 +4,7 @@
 #import "RCTBridgeModule.h"
 #import "STKAudioPlayer.h"
 
-@interface RNReactNativeAudioStreaming : NSObject <RCTBridgeModule, STKAudioPlayerDelegate>
+@interface ReactNativeAudioStreaming : NSObject <RCTBridgeModule, STKAudioPlayerDelegate>
 
 @property (nonatomic, strong) STKAudioPlayer *audioPlayer;
 @property (nonatomic, readwrite) BOOL isPlayingWithOthers;

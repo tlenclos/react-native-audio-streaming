@@ -1,14 +1,14 @@
 #import "RCTBridgeModule.h"
 #import "RCTEventDispatcher.h"
 
-#import "RNReactNativeAudioStreaming.h"
+#import "ReactNativeAudioStreaming.h"
 
 #define LPN_AUDIO_BUFFER_SEC 20 // Can't use this with shoutcast buffer meta data
 
 @import AVFoundation;
 @import MediaPlayer;
 
-@implementation RNReactNativeAudioStreaming
+@implementation ReactNativeAudioStreaming
 
 @synthesize bridge = _bridge;
 
@@ -18,7 +18,7 @@ RCT_EXPORT_MODULE()
    return dispatch_get_main_queue();
 }
 
-- (RNReactNativeAudioStreaming *)init
+- (ReactNativeAudioStreaming *)init
 {
    self = [super init];
    if (self) {
