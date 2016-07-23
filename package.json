@@ -2,15 +2,24 @@
   "name": "react-native-audio-streaming",
   "version": "2.0.0",
   "description": "React native audio streaming library for android and iOS",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tlenclos/react-native-audio-streaming.git"
+  },
+  "keywords": [
+    "react-native",
+    "audio streaming",
+    "ios",
+    "android",
+    "web radio",
+    "player"
+  ],
+  "author": "Thibault Lenclos",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Not test yet sadly :(\" && exit 0"
   },
-  "keywords": [
-    "react-native"
-  ],
-  "author": "Thibault Lenclos",
-  "license": "MIT",
   "peerDependencies": {
     "react-native": "^0.30.0"
   },
