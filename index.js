@@ -125,6 +125,8 @@ const styles = StyleSheet.create({
         borderRadius: iconSize / 2,
         width: iconSize,
         height: Platform.os == 'ios' ? iconSize : 40,
+        justifyContent: 'center',
+        alignItems: 'center',
         textAlign: 'center',
         paddingTop: Platform.os == 'ios' ? 10 : 0
     },
