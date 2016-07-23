@@ -18,6 +18,10 @@
 
 `$ react-native link react-native-audio-streaming`
 
+Go to `node_modules` ➜ `react-native-audio-streaming` => `ios` and add `Pods.xcodeproj`
+
+In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
+
 ### Manual installation
 
 #### iOS
@@ -81,7 +85,6 @@ class PlayerUI extends Component {
 
 ## TODO
 
-- [ ] Improve installation of the libs
 - [ ] Same API for android & iOS
 - [ ] Allow to specify custom style for the android notification (maybe a custom view ?)
 - [ ] Allow to specify custom styles for the player
