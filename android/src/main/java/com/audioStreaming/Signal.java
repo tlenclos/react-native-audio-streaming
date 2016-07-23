@@ -244,9 +244,6 @@ public class Signal extends Service implements OnErrorListener,
             sendBroadcast(new Intent(Mode.STARTED));
         }
 
-        if (this.isPlaying) {
-            sendBroadcast(new Intent(Mode.PLAYING));
-        }
         return Service.START_NOT_STICKY;
     }
 

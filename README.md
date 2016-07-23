@@ -57,10 +57,6 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 import { ReactNativeAudioStreamingModule } from 'react-native-audio-streaming';
 
 const url = "http://lacavewebradio.chickenkiller.com:8000/stream.mp3";
-if (Platform.os != 'ios') {
-    ReactNativeAudioStreamingModule.setURLStreaming(url);
-}
-
 ReactNativeAudioStreamingModule.pause();
 ReactNativeAudioStreamingModule.resume();
 ReactNativeAudioStreamingModule.play(url);
@@ -85,7 +81,6 @@ class PlayerUI extends Component {
 
 ## TODO
 
-- [ ] Same API for android & iOS
 - [ ] Allow to specify custom style for the android notification (maybe a custom view ?)
 - [ ] Allow to specify custom styles for the player
 - [ ] Handle artwork of artist

@@ -9,10 +9,12 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -57,13 +59,24 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
 
   @Override
   public String getName() {
-    return "ReactNativeAudioStreamingModule";
+    return "ReactNativeAudioStreaming";
+  }
+
+  @Override
+  public void initialize() {
+    super.initialize();
+
+    try {
+      bindIntent = new Intent(this.context, Signal.class);
+      this.context.bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
+    } catch (Exception e) {
+      Log.e("ERROR", e.getMessage());
+    }
   }
 
   @Override
   public void onServiceConnected(ComponentName className, IBinder service) {
     signal = ((Signal.RadioBinder) service).getService();
-    signal.setURLStreaming(streamingURL); // URL of MP3 or AAC stream
     signal.setData(this.context, this.clsActivity, this);
     WritableMap params = Arguments.createMap();
     sendEvent(this.getReactApplicationContextModule(), "streamingOpen", params);
@@ -74,21 +87,10 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
     signal = null;
   }
 
-
-  @ReactMethod
-  public void setURLStreaming(String streamingURL) {
-    this.streamingURL = streamingURL;
-
-    try {
-      bindIntent = new Intent(this.context, Signal.class);
-      this.context.bindService(bindIntent, this, Context.BIND_AUTO_CREATE);
-    } catch (Exception e) {
-      Log.e("ERROR", e.getMessage());
-    }
-  }
-
   @ReactMethod
   public void play(String streamingURL) {
+    this.streamingURL = streamingURL;
+    signal.setURLStreaming(streamingURL); // URL of MP3 or AAC stream
     signal.play();
     signal.showNotification();
   }
@@ -113,5 +115,12 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
   @ReactMethod
   public void destroyNotification() {
     signal.exitNotification();
+  }
+
+  @ReactMethod
+  public void getStatus(Callback callback) {
+    WritableMap state = Arguments.createMap();
+    state.putString("status", signal != null && signal.isPlaying ? Mode.PLAYING : Mode.STOPPED);
+    callback.invoke(null, state);
   }
 }

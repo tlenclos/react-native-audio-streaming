@@ -6,7 +6,8 @@ import {
     View,
     TouchableOpacity,
     DeviceEventEmitter,
-    ActivityIndicator
+    ActivityIndicator,
+    Platform
 } from 'react-native';
 
 const { ReactNativeAudioStreaming } = NativeModules;
@@ -123,9 +124,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: iconSize / 2,
         width: iconSize,
-        height: iconSize,
+        height: Platform.os == 'ios' ? iconSize : 40,
         textAlign: 'center',
-        paddingTop: 10
+        paddingTop: Platform.os == 'ios' ? 10 : 0
     },
     textContainer: {
         flexDirection: 'column',
