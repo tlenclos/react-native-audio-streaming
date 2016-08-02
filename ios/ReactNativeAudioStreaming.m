@@ -89,6 +89,48 @@ RCT_EXPORT_METHOD(stop)
    }
 }
 
+RCT_EXPORT_METHOD(seekToTime:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+
+   [self.audioPlayer seekToTime:seconds];
+}
+
+RCT_EXPORT_METHOD(goForward:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+   
+   double newtime = self.audioPlayer.progress + seconds;
+   
+   if (self.audioPlayer.duration < newtime) {
+      [self.audioPlayer stop];
+      [self setNowPlayingInfo:false];
+   }
+   else {
+      [self.audioPlayer seekToTime:newtime];
+   }
+}
+
+RCT_EXPORT_METHOD(goBack:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+   
+   double newtime = self.audioPlayer.progress - seconds;
+   
+   if (newtime < 0) {
+      [self.audioPlayer seekToTime:0.0];
+   }
+   else {
+      [self.audioPlayer seekToTime:newtime];
+   }
+}
+
 RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 {
    if (!self.audioPlayer) {
