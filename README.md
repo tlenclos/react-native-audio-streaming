@@ -31,7 +31,7 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 2. Go to `node_modules` ➜ `react-native-audio-streaming` => `ios`
    - run `pod install` to download StreamingKit dependency
    - add `ReactNativeAudioStreaming.xcodeproj`
-   - add `Pods.xcodeproj`
+   - add `Pods/Pods.xcodeproj`
 3. In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)
 
@@ -55,13 +55,13 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 ### Playing sound (similar code used by the player UI)
 
 ```javascript
-import { ReactNativeAudioStreamingModule } from 'react-native-audio-streaming';
+import { ReactNativeAudioStreaming } from 'react-native-audio-streaming';
 
 const url = "http://lacavewebradio.chickenkiller.com:8000/stream.mp3";
-ReactNativeAudioStreamingModule.pause();
-ReactNativeAudioStreamingModule.resume();
-ReactNativeAudioStreamingModule.play(url);
-ReactNativeAudioStreamingModule.stop();
+ReactNativeAudioStreaming.pause();
+ReactNativeAudioStreaming.resume();
+ReactNativeAudioStreaming.play(url);
+ReactNativeAudioStreaming.stop();
 ```
 
 For more information see the Example app.
