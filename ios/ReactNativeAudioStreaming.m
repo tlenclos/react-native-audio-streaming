@@ -28,12 +28,32 @@ RCT_EXPORT_MODULE()
       [self registerAudioInterruptionNotifications];
       [self registerRemoteControlEvents];
       [self setNowPlayingInfo:true];
+
+      [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
+
       NSLog(@"AudioPlayer initialized");
    }
    
    return self;
 }
 
+-(void) tick:(NSTimer*)timer
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+   
+   if (self.audioPlayer.currentlyPlayingQueueItemId != nil) {
+      NSNumber *progress = [NSNumber numberWithFloat:self.audioPlayer.progress];
+      NSNumber *duration = [NSNumber numberWithFloat:self.audioPlayer.duration];
+      
+      [self.bridge.eventDispatcher sendDeviceEventWithName:@"AudioBridgeEvent" body:@{
+                                                                     @"status": @"STREAMING",
+                                                                     @"progress": progress,
+                                                                     @"duration": duration
+                                                                     }];
+   }
+}
 
 - (void)dealloc
 {
