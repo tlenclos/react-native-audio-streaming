@@ -28,6 +28,7 @@ RCT_EXPORT_MODULE()
       [self registerAudioInterruptionNotifications];
       [self registerRemoteControlEvents];
       [self setNowPlayingInfo:true];
+      self.lastUrlString = @"";
 
       [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
 
@@ -70,12 +71,13 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl)
    if (!self.audioPlayer) {
       return;
    }
-   if (self.audioPlayer.state == STKAudioPlayerStatePaused) {
+   if (self.audioPlayer.state == STKAudioPlayerStatePaused && [self.lastUrlString isEqualToString:streamUrl]) {
       [self.audioPlayer resume];
    } else {
       [self.audioPlayer play:streamUrl];
    }
-   
+
+   self.lastUrlString = streamUrl;
    [self setNowPlayingInfo:true];
 }
 
