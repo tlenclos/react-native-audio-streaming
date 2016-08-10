@@ -29,9 +29,8 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
   private Intent bindIntent;
   private String streamingURL;
 
-  public ReactNativeAudioStreamingModule(ReactApplicationContext reactContext, Class<?> cls) {
+  public ReactNativeAudioStreamingModule(ReactApplicationContext reactContext) {
     super(reactContext);
-    this.clsActivity = cls;
     this.context = reactContext;
   }
 
@@ -40,6 +39,8 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
   }
 
   public Class<?> getClassActivity() {
+    if(this.clsActivity == null)
+      this.clsActivity = getCurrentActivity().getClass();
     return this.clsActivity;
   }
 
@@ -77,7 +78,7 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule 
   @Override
   public void onServiceConnected(ComponentName className, IBinder service) {
     signal = ((Signal.RadioBinder) service).getService();
-    signal.setData(this.context, this.clsActivity, this);
+    signal.setData(this.context, this);
     WritableMap params = Arguments.createMap();
     sendEvent(this.getReactApplicationContextModule(), "streamingOpen", params);
   }
