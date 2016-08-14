@@ -19,7 +19,7 @@
 
 `$ react-native link react-native-audio-streaming`
 
-Go to `node_modules` ➜ `react-native-audio-streaming` => `ios` and add `Pods.xcodeproj`
+Go to `node_modules` ➜ `react-native-audio-streaming` => `Pods` and drag/drop `Pods.xcodeproj` to the Libraries folder in your XCode project.
 
 In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 
@@ -30,8 +30,8 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. Go to `node_modules` ➜ `react-native-audio-streaming` => `ios`
    - run `pod install` to download StreamingKit dependency
-   - add `ReactNativeAudioStreaming.xcodeproj`
-   - add `Pods/Pods.xcodeproj`
+   - add `ReactNativeAudioStreaming.xcodeproj` to the Libraries folder in your XCode project
+   - add `Pods/Pods.xcodeproj` to the Libraries folder in your XCode project
 3. In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)
 
@@ -39,7 +39,7 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 
 1. Open up `android/app/src/main/java/[...]/MainActivity.java`
   - Add `import com.reactlibrary.ReactNativeAudioStreamingPackage;` to the imports at the top of the file
-  - Add `new ReactNativeAudioStreamingPackage(MainActivity.class)` to the list returned by the `getPackages()` method
+  - Add `new ReactNativeAudioStreamingPackage()` to the list returned by the `getPackages()` method
 2. Append the following lines to `android/settings.gradle`:
   	```
   	include ':react-native-audio-streaming'
@@ -91,3 +91,9 @@ class PlayerUI extends Component {
 
 - Android version based on the work of @EstebanFuentealba https://github.com/EstebanFuentealba/react-native-android-audio-streaming-aac
 - iOS version based on the work of @jhabdas https://github.com/jhabdas/lumpen-radio
+
+See also the list of [contributors](https://github.com/tlenclos/react-native-audio-streaming/graphs/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details
