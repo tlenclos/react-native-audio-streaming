@@ -32,7 +32,7 @@ public class PhoneListener extends PhoneStateListener {
                 break;
             case TelephonyManager.CALL_STATE_RINGING:
                 //CALL_STATE_RINGING
-                if (this.module.getSignal().isPlaying) {
+                if (this.module.getSignal().isPlaying()) {
                     this.module.stopOncall();
                 }
                 break;
