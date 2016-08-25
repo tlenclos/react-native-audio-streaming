@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start"
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "ios": "node node_modules/react-native/local-cli/cli.js run-ios --simulator \"iPhone 6\"",
+    "android": "node node_modules/react-native/local-cli/cli.js run-android"
   },
   "dependencies": {
     "react": "15.2.1",
     "react-native": "0.31.0",
-    "react-native-audio-streaming": "git+https://git@github.com/tlenclos/react-native-audio-streaming.git#master"
+    "react-native-audio-streaming": "git+https://git@github.com/broberson/react-native-audio-streaming.git#master"
   }
 }
