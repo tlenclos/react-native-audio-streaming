@@ -22,21 +22,22 @@ RCT_EXPORT_MODULE()
 {
    self = [super init];
    if (self) {
+      [self setSharedAudioSessionCategory];
       self.audioPlayer = [[STKAudioPlayer alloc] initWithOptions:(STKAudioPlayerOptions){ .flushQueueOnSeek = YES }];
       [self.audioPlayer setDelegate:self];
-      [self setSharedAudioSessionCategory];
       [self registerAudioInterruptionNotifications];
       [self registerRemoteControlEvents];
       [self setNowPlayingInfo:true];
       self.lastUrlString = @"";
-
+      
       [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
-
+      
       NSLog(@"AudioPlayer initialized");
    }
    
    return self;
 }
+
 
 -(void) tick:(NSTimer*)timer
 {
@@ -44,17 +45,20 @@ RCT_EXPORT_MODULE()
       return;
    }
    
-   if (self.audioPlayer.currentlyPlayingQueueItemId != nil) {
+   if (self.audioPlayer.currentlyPlayingQueueItemId != nil && self.audioPlayer.state == STKAudioPlayerStatePlaying) {
       NSNumber *progress = [NSNumber numberWithFloat:self.audioPlayer.progress];
       NSNumber *duration = [NSNumber numberWithFloat:self.audioPlayer.duration];
+      NSString *url = [NSString stringWithString:self.audioPlayer.currentlyPlayingQueueItemId];
       
       [self.bridge.eventDispatcher sendDeviceEventWithName:@"AudioBridgeEvent" body:@{
-                                                                     @"status": @"STREAMING",
-                                                                     @"progress": progress,
-                                                                     @"duration": duration
-                                                                     }];
+                                                                                 @"status": @"STREAMING",
+                                                                                 @"progress": progress,
+                                                                                 @"duration": duration,
+                                                                                 @"url": url,
+                                                                                 }];
    }
 }
+
 
 - (void)dealloc
 {
@@ -71,6 +75,9 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl)
    if (!self.audioPlayer) {
       return;
    }
+
+   [self activate];
+   
    if (self.audioPlayer.state == STKAudioPlayerStatePaused && [self.lastUrlString isEqualToString:streamUrl]) {
       [self.audioPlayer resume];
    } else {
@@ -81,6 +88,48 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl)
    [self setNowPlayingInfo:true];
 }
 
+RCT_EXPORT_METHOD(seekToTime:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+
+   [self.audioPlayer seekToTime:seconds];
+}
+
+RCT_EXPORT_METHOD(goForward:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+   
+   double newtime = self.audioPlayer.progress + seconds;
+   
+   if (self.audioPlayer.duration < newtime) {
+      [self.audioPlayer stop];
+      [self setNowPlayingInfo:false];
+   }
+   else {
+      [self.audioPlayer seekToTime:newtime];
+   }
+}
+
+RCT_EXPORT_METHOD(goBack:(double) seconds)
+{
+   if (!self.audioPlayer) {
+      return;
+   }
+   
+   double newtime = self.audioPlayer.progress - seconds;
+   
+   if (newtime < 0) {
+      [self.audioPlayer seekToTime:0.0];
+   }
+   else {
+      [self.audioPlayer seekToTime:newtime];
+   }
+}
+
 RCT_EXPORT_METHOD(pause)
 {
    if (!self.audioPlayer) {
@@ -88,6 +137,7 @@ RCT_EXPORT_METHOD(pause)
    } else {
       [self.audioPlayer pause];
       [self setNowPlayingInfo:false];
+      [self deactivate];
    }
 }
 
@@ -96,6 +146,7 @@ RCT_EXPORT_METHOD(resume)
    if (!self.audioPlayer) {
       return;
    } else {
+      [self activate];
       [self.audioPlayer resume];
       [self setNowPlayingInfo:true];
    }
@@ -108,22 +159,31 @@ RCT_EXPORT_METHOD(stop)
    } else {
       [self.audioPlayer stop];
       [self setNowPlayingInfo:false];
+      [self deactivate];
    }
 }
 
 RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 {
-   if (!self.audioPlayer) {
-      callback(@[[NSNull null], @{@"status": @"ERROR"}]);
-   } else if ([self.audioPlayer state] == STKAudioPlayerStatePlaying) {
-      callback(@[[NSNull null], @{@"status": @"PLAYING"}]);
-   } else if ([self.audioPlayer state] == STKAudioPlayerStateBuffering) {
-      callback(@[[NSNull null], @{@"status": @"BUFFERING"}]);
-   } else {
-      callback(@[[NSNull null], @{@"status": @"STOPPED"}]);
-   }
-}
+   NSString *status = @"STOPPED";
+   NSNumber *duration = [NSNumber numberWithFloat:self.audioPlayer.duration];
+   NSNumber *progress = [NSNumber numberWithFloat:self.audioPlayer.progress];
 
+   if (!self.audioPlayer) {
+      status = @"ERROR";
+   }
+   else if ([self.audioPlayer state] == STKAudioPlayerStatePlaying) {
+      status = @"PLAYING";
+   }
+   else if ([self.audioPlayer state] == STKAudioPlayerStatePaused) {
+      status = @"PAUSED";
+   }
+   else if ([self.audioPlayer state] == STKAudioPlayerStateBuffering) {
+      status = @"BUFFERING";
+   }
+   
+   callback(@[[NSNull null], @{@"status": status, @"progress": progress, @"duration": duration, @"url": self.lastUrlString}]);
+}
 
 #pragma mark - StreamingKit Audio Player
 
@@ -161,20 +221,23 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 
 - (void)audioPlayer:(STKAudioPlayer *)player stateChanged:(STKAudioPlayerState)state previousState:(STKAudioPlayerState)previousState
 {
+   NSNumber *duration = [NSNumber numberWithFloat:self.audioPlayer.duration];
+   NSNumber *progress = [NSNumber numberWithFloat:self.audioPlayer.progress];
+   
    switch (state) {
       case STKAudioPlayerStatePlaying:
          [self.bridge.eventDispatcher sendDeviceEventWithName:@"AudioBridgeEvent"
-                                                         body:@{@"status": @"PLAYING"}];
+                                                         body:@{@"status": @"PLAYING", @"progress": progress, @"duration": duration, @"url": self.lastUrlString}];
          break;
          
       case STKAudioPlayerStatePaused:
          [self.bridge.eventDispatcher sendDeviceEventWithName:@"AudioBridgeEvent"
-                                                         body:@{@"status": @"PAUSED"}];
+                                                         body:@{@"status": @"PAUSED", @"progress": progress, @"duration": duration, @"url": self.lastUrlString}];
          break;
          
       case STKAudioPlayerStateStopped:
          [self.bridge.eventDispatcher sendDeviceEventWithName:@"AudioBridgeEvent"
-                                                         body:@{@"status": @"STOPPED"}];
+                                                         body:@{@"status": @"STOPPED", @"progress": progress, @"duration": duration, @"url": self.lastUrlString}];
          break;
          
       case STKAudioPlayerStateBuffering:
@@ -195,13 +258,37 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 
 #pragma mark - Audio Session
 
+- (void)activate
+{
+   NSError *categoryError = nil;
+   
+   [[AVAudioSession sharedInstance] setActive:YES error:&categoryError];
+   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&categoryError];
+   
+   if (categoryError) {
+      NSLog(@"Error setting category! %@", [categoryError description]);
+   }
+}
+
+- (void)deactivate
+{
+   NSError *categoryError = nil;
+   
+   [[AVAudioSession sharedInstance] setActive:NO error:&categoryError];
+   
+   if (categoryError) {
+      NSLog(@"Error setting category! %@", [categoryError description]);
+   }
+}
 
 - (void)setSharedAudioSessionCategory
 {
    NSError *categoryError = nil;
-   
-   // Create shared session and set audio session category allowing background playback
-   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&categoryError];
+   self.isPlayingWithOthers = [[AVAudioSession sharedInstance] isOtherAudioPlaying];
+
+   [[AVAudioSession sharedInstance] setActive:NO error:&categoryError];
+   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&categoryError];
+   // [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&categoryError];
    
    if (categoryError) {
       NSLog(@"Error setting category! %@", [categoryError description]);
