@@ -61,9 +61,9 @@ public class Signal extends Service implements OnErrorListener,
     private TelephonyManager phoneManager;
     private PhoneListener phoneStateListener;
 
-    public void setData(Context context, Class<?> clsActivity, ReactNativeAudioStreamingModule module) {
+    public void setData(Context context, ReactNativeAudioStreamingModule module) {
         this.context = context;
-        this.clsActivity = clsActivity;
+        this.clsActivity = module.getClassActivity();
         this.module = module;
 
         this.eventsReceiver = new EventsReceiver(this.module);
