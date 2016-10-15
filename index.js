@@ -62,7 +62,7 @@ class Player extends Component {
                 break;
             case STOPPED:
             case ERROR:
-                ReactNativeAudioStreaming.play(this.props.url);
+                ReactNativeAudioStreaming.play(this.props.url, {showIniOSMediaCenter: true, showInAndroidNotifications: true});
                 break;
             case BUFFERING:
                 ReactNativeAudioStreaming.stop();
