@@ -38,7 +38,7 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 #### Android
 
 1. Open up `android/app/src/main/java/[...]/MainApplication.java`
-  - Add `import com.reactlibrary.ReactNativeAudioStreamingPackage;` to the imports at the top of the file
+  - Add `import com.audioStreaming.ReactNativeAudioStreamingPackage;` to the imports at the top of the file
   - Add `new ReactNativeAudioStreamingPackage()` to the list returned by the `getPackages()` method
   If you're using Android 23 or above
   - Add `new ReactNativeAudioStreamingPackage(MainActivity.class)` to he list returned by the `getPackages()`method instead.
