@@ -96,6 +96,9 @@ class PlayerUI extends Component {
 
 See also the list of [contributors](https://github.com/tlenclos/react-native-audio-streaming/graphs/contributors) who participated in this project.
 
+
+## [Changelog](https://github.com/tlenclos/react-native-audio-streaming/blob/master/CHANGELOG.md)
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details
