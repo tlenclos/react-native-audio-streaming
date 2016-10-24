@@ -14,6 +14,7 @@ const { ReactNativeAudioStreaming } = NativeModules;
 
 // Possibles states
 const PLAYING = 'PLAYING';
+const STREAMING = 'STREAMING';
 const PAUSED = 'PAUSED';
 const STOPPED = 'STOPPED';
 const ERROR = 'ERROR';
@@ -55,6 +56,7 @@ class Player extends Component {
     _onPress() {
         switch (this.state.status) {
             case PLAYING:
+            case STREAMING:
                 ReactNativeAudioStreaming.pause();
                 break;
             case PAUSED:
@@ -74,6 +76,7 @@ class Player extends Component {
         let icon = null;
         switch (this.state.status) {
             case PLAYING:
+            case STREAMING:
                 icon = <Text style={styles.icon}>॥</Text>;
                 break;
             case PAUSED:
@@ -124,11 +127,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: iconSize / 2,
         width: iconSize,
-        height: Platform.os == 'ios' ? iconSize : 40,
+        height: Platform.OS == 'ios' ? iconSize : 40,
         justifyContent: 'center',
         alignItems: 'center',
         textAlign: 'center',
-        paddingTop: Platform.os == 'ios' ? 10 : 0
+        paddingTop: Platform.OS == 'ios' ? 10 : 0
     },
     textContainer: {
         flexDirection: 'column',

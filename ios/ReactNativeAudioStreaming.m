@@ -82,10 +82,12 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl options:(NSDictionary *)options)
 
    self.lastUrlString = streamUrl;
    self.showNowPlayingInfo = false;
+   
    if ([options objectForKey:@"showIniOSMediaCenter"]) {
       self.showNowPlayingInfo = [[options objectForKey:@"showIniOSMediaCenter"] boolValue];
    }
-   if(self.showNowPlayingInfo) {
+   
+   if (self.showNowPlayingInfo) {
       //unregister any existing registrations
       [self unregisterAudioInterruptionNotifications];
       [self unregisterRemoteControlEvents];
@@ -93,6 +95,7 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl options:(NSDictionary *)options)
       [self registerAudioInterruptionNotifications];
       [self registerRemoteControlEvents];
    }
+   
    [self setNowPlayingInfo:true];
 }
 
@@ -116,8 +119,7 @@ RCT_EXPORT_METHOD(goForward:(double) seconds)
    if (self.audioPlayer.duration < newtime) {
       [self.audioPlayer stop];
       [self setNowPlayingInfo:false];
-   }
-   else {
+   } else {
       [self.audioPlayer seekToTime:newtime];
    }
 }
@@ -132,8 +134,7 @@ RCT_EXPORT_METHOD(goBack:(double) seconds)
    
    if (newtime < 0) {
       [self.audioPlayer seekToTime:0.0];
-   }
-   else {
+   } else {
       [self.audioPlayer seekToTime:newtime];
    }
 }
@@ -179,14 +180,11 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 
    if (!self.audioPlayer) {
       status = @"ERROR";
-   }
-   else if ([self.audioPlayer state] == STKAudioPlayerStatePlaying) {
+   } else if ([self.audioPlayer state] == STKAudioPlayerStatePlaying) {
       status = @"PLAYING";
-   }
-   else if ([self.audioPlayer state] == STKAudioPlayerStatePaused) {
+   } else if ([self.audioPlayer state] == STKAudioPlayerStatePaused) {
       status = @"PAUSED";
-   }
-   else if ([self.audioPlayer state] == STKAudioPlayerStateBuffering) {
+   } else if ([self.audioPlayer state] == STKAudioPlayerStateBuffering) {
       status = @"BUFFERING";
    }
    
@@ -296,7 +294,6 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 
    [[AVAudioSession sharedInstance] setActive:NO error:&categoryError];
    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&categoryError];
-   // [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&categoryError];
    
    if (categoryError) {
       NSLog(@"Error setting category! %@", [categoryError description]);
@@ -440,11 +437,11 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
       // TODO Get artwork from stream
       // MPMediaItemArtwork *artwork = [[MPMediaItemArtwork alloc]initWithImage:[UIImage imageNamed:@"webradio1"]];
    
-      NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"];
+      NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
       NSDictionary *nowPlayingInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                      self.currentSong, MPMediaItemPropertyAlbumTitle,
+                                      self.currentSong ? self.currentSong : @"", MPMediaItemPropertyAlbumTitle,
                                       @"", MPMediaItemPropertyAlbumArtist,
-                                      appName ? appName : @"", MPMediaItemPropertyTitle,
+                                      appName ? appName : @"AppName", MPMediaItemPropertyTitle,
                                       [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
       [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
    } else {
