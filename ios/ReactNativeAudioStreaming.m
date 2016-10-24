@@ -25,11 +25,7 @@ RCT_EXPORT_MODULE()
       [self setSharedAudioSessionCategory];
       self.audioPlayer = [[STKAudioPlayer alloc] initWithOptions:(STKAudioPlayerOptions){ .flushQueueOnSeek = YES }];
       [self.audioPlayer setDelegate:self];
-      [self registerAudioInterruptionNotifications];
-      [self registerRemoteControlEvents];
-      [self setNowPlayingInfo:true];
       self.lastUrlString = @"";
-      
       [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(tick:) userInfo:nil repeats:YES];
       
       NSLog(@"AudioPlayer initialized");
@@ -70,7 +66,7 @@ RCT_EXPORT_MODULE()
 
 #pragma mark - Pubic API
 
-RCT_EXPORT_METHOD(play:(NSString *) streamUrl)
+RCT_EXPORT_METHOD(play:(NSString *) streamUrl options:(NSDictionary *)options)
 {
    if (!self.audioPlayer) {
       return;
@@ -85,6 +81,18 @@ RCT_EXPORT_METHOD(play:(NSString *) streamUrl)
    }
 
    self.lastUrlString = streamUrl;
+   self.showNowPlayingInfo = false;
+   if ([options objectForKey:@"showIniOSMediaCenter"]) {
+      self.showNowPlayingInfo = [[options objectForKey:@"showIniOSMediaCenter"] boolValue];
+   }
+   if(self.showNowPlayingInfo) {
+      //unregister any existing registrations
+      [self unregisterAudioInterruptionNotifications];
+      [self unregisterRemoteControlEvents];
+      //register
+      [self registerAudioInterruptionNotifications];
+      [self registerRemoteControlEvents];
+   }
    [self setNowPlayingInfo:true];
 }
 
@@ -428,16 +436,20 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
 
 - (void)setNowPlayingInfo:(bool)isPlaying
 {
-   // TODO Get artwork from stream
-   // MPMediaItemArtwork *artwork = [[MPMediaItemArtwork alloc]initWithImage:[UIImage imageNamed:@"webradio1"]];
+   if (self.showNowPlayingInfo) {
+      // TODO Get artwork from stream
+      // MPMediaItemArtwork *artwork = [[MPMediaItemArtwork alloc]initWithImage:[UIImage imageNamed:@"webradio1"]];
    
-   NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"];
-   NSDictionary *nowPlayingInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   self.currentSong, MPMediaItemPropertyAlbumTitle,
-                                   @"", MPMediaItemPropertyAlbumArtist,
-                                   appName ? appName : @"", MPMediaItemPropertyTitle,
-                                   [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
-   [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
+      NSString* appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"];
+      NSDictionary *nowPlayingInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      self.currentSong, MPMediaItemPropertyAlbumTitle,
+                                      @"", MPMediaItemPropertyAlbumArtist,
+                                      appName ? appName : @"", MPMediaItemPropertyTitle,
+                                      [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
+      [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
+   } else {
+      [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
+   }
 }
 
 @end
