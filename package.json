@@ -1,6 +1,6 @@
 {
   "name": "react-native-audio-streaming",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "React native audio streaming library for android and iOS",
   "repository": {
     "type": "git",
