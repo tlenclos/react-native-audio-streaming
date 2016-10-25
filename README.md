@@ -84,10 +84,16 @@ class PlayerUI extends Component {
 
 ## TODO
 
+- [ ] Allow to play local files
 - [ ] Allow to specify custom style for the android notification (maybe a custom view ?)
 - [ ] Allow to specify custom styles for the player
 - [ ] Handle artwork of artist
 - [ ] Add tests
+
+## Other RN audio projects
+
+- [jsierles/react-native-audio](https://github.com/jsierles/react-native-audio) to play local audio and record
+- [zmxv/react-native-sound](https://github.com/zmxv/react-native-sound) to play local audio with more controls
 
 ## Credits
 
