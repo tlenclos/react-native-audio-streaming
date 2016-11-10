@@ -26,9 +26,6 @@ import android.widget.RemoteViews;
 import com.spoledge.aacdecoder.MultiPlayer;
 import com.spoledge.aacdecoder.PlayerCallback;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 public class Signal extends Service implements OnErrorListener,
         OnCompletionListener,
         OnPreparedListener,
