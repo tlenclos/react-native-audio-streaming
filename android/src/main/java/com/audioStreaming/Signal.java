@@ -349,11 +349,6 @@ public class Signal extends Service implements OnErrorListener,
     public void playerException(final Throwable t) {
         this.isPlaying = false;
         this.isPreparingStarted = false;
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        Intent BroadcastIntent = new Intent(Mode.ERROR);
-        BroadcastIntent.putExtra("stacktrace", sw.toString());
         sendBroadcast(new Intent(Mode.ERROR));
         //  TODO
     }
