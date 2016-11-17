@@ -104,6 +104,11 @@ class PlayerUI extends Component {
 
 See also the list of [contributors](https://github.com/tlenclos/react-native-audio-streaming/graphs/contributors) who participated in this project.
 
+## Contribute
+
+Since symlink support is [still lacking](https://github.com/facebook/react-native/issues/637) on React Native, I use the [wml](https://github.com/wix/wml) cli tool created by the nice folks at wix.
+
+`wml add ~/react-native-audio-streaming ~/react-native-audio-streaming/Example/node_modules/react-native-audio-streaming`
 
 ## [Changelog](https://github.com/tlenclos/react-native-audio-streaming/blob/master/CHANGELOG.md)
 
