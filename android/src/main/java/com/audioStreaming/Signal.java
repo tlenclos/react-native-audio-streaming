@@ -25,14 +25,19 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ts.AdtsExtractor;
+import com.google.android.exoplayer2.metadata.MetadataRenderer;
+import com.google.android.exoplayer2.metadata.id3.ApicFrame;
+import com.google.android.exoplayer2.metadata.id3.GeobFrame;
+import com.google.android.exoplayer2.metadata.id3.Id3Frame;
+import com.google.android.exoplayer2.metadata.id3.PrivFrame;
+import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
+import com.google.android.exoplayer2.metadata.id3.TxxxFrame;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -41,7 +46,12 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
-public class Signal extends Service implements ExoPlayer.EventListener, AudioRendererEventListener {
+import java.io.IOException;
+import java.util.List;
+
+public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output<List<Id3Frame>>, ExtractorMediaSource.EventListener {
+    private static final String TAG = "ReactNative";
+
     // Notification
     private Class<?> clsActivity;
     private static final int NOTIFY_ME_ID = 696969;
@@ -50,7 +60,7 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
     public static RemoteViews remoteViews;
 
     // Player
-    private ExoPlayer player = null;
+    private SimpleExoPlayer player = null;
 
     public static final String BROADCAST_PLAYBACK_STOP = "stop",
             BROADCAST_PLAYBACK_PLAY = "pause",
@@ -83,10 +93,12 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         this.eventsReceiver = new EventsReceiver(this.module);
 
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CREATED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.IDLE));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.DESTROYED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STARTED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CONNECTING));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PLAYING));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.READY));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STOPPED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PAUSED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.COMPLETED));
@@ -95,7 +107,6 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_END));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.METADATA_UPDATED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ALBUM_UPDATED));
-
 
         this.phoneStateListener = new PhoneListener(this.module);
         this.phoneManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
@@ -114,35 +125,35 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         Log.d("onPlayerStateChanged", ""+playbackState);
 
         switch (playbackState) {
+            case ExoPlayer.STATE_IDLE:
+                sendBroadcast(new Intent(Mode.IDLE));
+                break;
             case ExoPlayer.STATE_BUFFERING:
+
                 sendBroadcast(new Intent(Mode.BUFFERING_START));
                 break;
             case ExoPlayer.STATE_READY:
-                if (this.player.getPlayWhenReady()) {
+                if (this.player != null && this.player.getPlayWhenReady()) {
                     sendBroadcast(new Intent(Mode.PLAYING));
                 } else {
                     sendBroadcast(new Intent(Mode.READY));
                 }
                 break;
-            case ExoPlayer.STATE_IDLE:
-                sendBroadcast(new Intent(Mode.IDLE));
-                break;
             case ExoPlayer.STATE_ENDED:
-                sendBroadcast(new Intent(Mode.BUFFERING_END));
+                sendBroadcast(new Intent(Mode.BUFFERING_START));
                 break;
         }
     }
 
     @Override
-    public void onTimelineChanged(Timeline timeline, Object manifest) {
+    public void onTimelineChanged(Timeline timeline, Object manifest) {}
 
-    }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
+        Log.d(TAG, error.getMessage());
         sendBroadcast(new Intent(Mode.ERROR));
     }
-
     @Override
     public void onPositionDiscontinuity() {
 
@@ -174,7 +185,10 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         return result.toString();
     }
 
-    // Player API
+    /**
+     *  Player controls
+     */
+
     public void play(String url) {
         if (player != null ) {
             player.setPlayWhenReady(false);
@@ -189,37 +203,35 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         Handler mainHandler = new Handler();
         TrackSelector trackSelector = new DefaultTrackSelector(mainHandler);
         LoadControl loadControl = new DefaultLoadControl();
-        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
+        this.player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
 
         // Create source
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, "ExoPlayer", bandwidthMeter);
-        MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, null, null);
+        DataSource.Factory dataSourceFactory = new AudioStreamingDataSourceFactory(this.getApplication(), getDefaultUserAgent(), bandwidthMeter);
+        MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, mainHandler, this);
 
         // Start preparing audio
         player.prepare(audioSource);
         player.addListener(this);
+        player.setId3Output(this);
         player.setPlayWhenReady(playWhenReady);
-        sendBroadcast(new Intent(Mode.PLAYING));
     }
 
     public void start() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(true);
-        sendBroadcast(new Intent(Mode.PLAYING));
     }
 
     public void pause() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(false);
-        sendBroadcast(new Intent(Mode.PAUSED));
+        sendBroadcast(new Intent(Mode.STOPPED));
     }
 
     public void resume() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(true);
-        sendBroadcast(new Intent(Mode.RESUMED));
     }
 
     public void stop() {
@@ -258,6 +270,42 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
+
+    /**
+     *  Meta data information
+     */
+
+    @Override
+    public void onMetadata(List<Id3Frame> id3Frames) {
+        for (Id3Frame id3Frame : id3Frames) {
+            if (id3Frame instanceof TxxxFrame) {
+                TxxxFrame txxxFrame = (TxxxFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s, value=%s", txxxFrame.id,
+                        txxxFrame.description, txxxFrame.value));
+            } else if (id3Frame instanceof PrivFrame) {
+                PrivFrame privFrame = (PrivFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: owner=%s", privFrame.id, privFrame.owner));
+            } else if (id3Frame instanceof GeobFrame) {
+                GeobFrame geobFrame = (GeobFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, filename=%s, description=%s",
+                        geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
+            } else if (id3Frame instanceof ApicFrame) {
+                ApicFrame apicFrame = (ApicFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, description=%s",
+                        apicFrame.id, apicFrame.mimeType, apicFrame.description));
+            } else if (id3Frame instanceof TextInformationFrame) {
+                TextInformationFrame textInformationFrame = (TextInformationFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s", textInformationFrame.id,
+                        textInformationFrame.description));
+            } else {
+                Log.i(TAG, String.format("ID3 TimedMetadata %s", id3Frame.id));
+            }
+        }
+    }
+
+    /**
+     *  Notification control
+     */
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -324,34 +372,8 @@ public class Signal extends Service implements ExoPlayer.EventListener, AudioRen
         notifyManager = null;
     }
 
-
     @Override
-    public void onAudioEnabled(DecoderCounters counters) {
-
-    }
-
-    @Override
-    public void onAudioSessionId(int audioSessionId) {
-
-    }
-
-    @Override
-    public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-
-    }
-
-    @Override
-    public void onAudioInputFormatChanged(Format format) {
-
-    }
-
-    @Override
-    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
-
-    }
-
-    @Override
-    public void onAudioDisabled(DecoderCounters counters) {
-
+    public void onLoadError(IOException error) {
+        Log.e(TAG, error.getMessage());
     }
 }
