@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -20,18 +21,27 @@ import android.os.Build;
 import android.net.Uri;
 
 import com.facebook.infer.annotation.Assertions;
-import com.google.android.exoplayer.ExoPlaybackException;
-import com.google.android.exoplayer.ExoPlayer;
-import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;
-import com.google.android.exoplayer.extractor.ExtractorSampleSource;
-import com.google.android.exoplayer.upstream.Allocator;
-import com.google.android.exoplayer.upstream.DataSource;
-import com.google.android.exoplayer.upstream.DefaultAllocator;
-import com.google.android.exoplayer.upstream.DefaultUriDataSource;
-import com.google.android.exoplayer.util.PlayerControl;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.decoder.DecoderCounters;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
-public class Signal extends Service implements ExoPlayer.Listener {
-
+public class Signal extends Service implements ExoPlayer.EventListener, AudioRendererEventListener {
     // Notification
     private Class<?> clsActivity;
     private static final int NOTIFY_ME_ID = 696969;
@@ -41,11 +51,6 @@ public class Signal extends Service implements ExoPlayer.Listener {
 
     // Player
     private ExoPlayer player = null;
-    private PlayerControl playerControl = null;
-
-    private static final int BUFFER_SEGMENT_SIZE = 64 * 1024;
-    private static final int BUFFER_SEGMENT_COUNT = 256;
-
 
     public static final String BROADCAST_PLAYBACK_STOP = "stop",
             BROADCAST_PLAYBACK_PLAY = "pause",
@@ -100,6 +105,11 @@ public class Signal extends Service implements ExoPlayer.Listener {
     }
 
     @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         Log.d("onPlayerStateChanged", ""+playbackState);
 
@@ -108,7 +118,7 @@ public class Signal extends Service implements ExoPlayer.Listener {
                 sendBroadcast(new Intent(Mode.BUFFERING_START));
                 break;
             case ExoPlayer.STATE_READY:
-                if (this.playerControl.isPlaying()) {
+                if (this.player.getPlayWhenReady()) {
                     sendBroadcast(new Intent(Mode.PLAYING));
                 } else {
                     sendBroadcast(new Intent(Mode.READY));
@@ -117,19 +127,25 @@ public class Signal extends Service implements ExoPlayer.Listener {
             case ExoPlayer.STATE_IDLE:
                 sendBroadcast(new Intent(Mode.IDLE));
                 break;
-            case ExoPlayer.STATE_PREPARING:
-                sendBroadcast(new Intent(Mode.PREPARING));
+            case ExoPlayer.STATE_ENDED:
+                sendBroadcast(new Intent(Mode.BUFFERING_END));
                 break;
         }
     }
 
     @Override
-    public void onPlayWhenReadyCommitted() { }
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
 
+    }
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         sendBroadcast(new Intent(Mode.ERROR));
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 
     private static String getDefaultUserAgent() {
@@ -158,17 +174,6 @@ public class Signal extends Service implements ExoPlayer.Listener {
         return result.toString();
     }
 
-    private MediaCodecAudioTrackRenderer buildRender(String url, String agent, boolean auto) {
-        Uri uri = Uri.parse(url);
-
-        Allocator allocator = new DefaultAllocator(BUFFER_SEGMENT_SIZE);
-        DataSource dataSource = new DefaultUriDataSource(context, agent);
-        ExtractorSampleSource sampleSource = new ExtractorSampleSource(uri, dataSource, allocator,
-                BUFFER_SEGMENT_COUNT * BUFFER_SEGMENT_SIZE);
-
-        return new MediaCodecAudioTrackRenderer(sampleSource);
-    }
-
     // Player API
     public void play(String url) {
         if (player != null ) {
@@ -179,12 +184,21 @@ public class Signal extends Service implements ExoPlayer.Listener {
 
         boolean playWhenReady = true; // TODO Allow user to customize this
         this.streamingURL = url;
-        player = ExoPlayer.Factory.newInstance(1);
-        playerControl = new PlayerControl(player);
 
-        String agent = getDefaultUserAgent();
-        MediaCodecAudioTrackRenderer render = this.buildRender(url, agent, playWhenReady);
-        player.prepare(render);
+        // Create player
+        Handler mainHandler = new Handler();
+        TrackSelector trackSelector = new DefaultTrackSelector(mainHandler);
+        LoadControl loadControl = new DefaultLoadControl();
+        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
+
+        // Create source
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, "ExoPlayer", bandwidthMeter);
+        MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, null, null);
+
+        // Start preparing audio
+        player.prepare(audioSource);
         player.addListener(this);
         player.setPlayWhenReady(playWhenReady);
         sendBroadcast(new Intent(Mode.PLAYING));
@@ -192,51 +206,51 @@ public class Signal extends Service implements ExoPlayer.Listener {
 
     public void start() {
         Assertions.assertNotNull(player);
-        playerControl.start();
+        player.setPlayWhenReady(true);
         sendBroadcast(new Intent(Mode.PLAYING));
     }
 
     public void pause() {
         Assertions.assertNotNull(player);
-        playerControl.pause();
+        player.setPlayWhenReady(false);
         sendBroadcast(new Intent(Mode.PAUSED));
     }
 
     public void resume() {
         Assertions.assertNotNull(player);
-        playerControl.start();
+        player.setPlayWhenReady(true);
         sendBroadcast(new Intent(Mode.RESUMED));
-    }
-
-    public boolean isPlaying() {
-        Assertions.assertNotNull(player);
-        return playerControl.isPlaying();
-    }
-
-    public int getDuration() {
-        Assertions.assertNotNull(player);
-        return playerControl.getDuration();
-    }
-
-    public int getCurrentPosition() {
-        Assertions.assertNotNull(player);
-        return playerControl.getCurrentPosition();
-    }
-
-    public int getBufferPercentage() {
-        Assertions.assertNotNull(player);
-        return playerControl.getBufferPercentage();
     }
 
     public void stop() {
         Assertions.assertNotNull(player);
-        player.stop();
+        player.setPlayWhenReady(false);
         sendBroadcast(new Intent(Mode.STOPPED));
     }
 
-    public void seekTo(int timeMillis) {
+    public boolean isPlaying() {
         Assertions.assertNotNull(player);
-        playerControl.seekTo(timeMillis);
+        return player.getPlayWhenReady();
+    }
+
+    public long getDuration() {
+        Assertions.assertNotNull(player);
+        return player.getDuration();
+    }
+
+    public long getCurrentPosition() {
+        Assertions.assertNotNull(player);
+        return player.getCurrentPosition();
+    }
+
+    public int getBufferPercentage() {
+        Assertions.assertNotNull(player);
+        return player.getBufferedPercentage();
+    }
+
+    public void seekTo(long timeMillis) {
+        Assertions.assertNotNull(player);
+        player.seekTo(timeMillis);
     }
 
     public boolean isConnected() {
@@ -308,5 +322,36 @@ public class Signal extends Service implements ExoPlayer.Listener {
         clearNotification();
         notifyBuilder = null;
         notifyManager = null;
+    }
+
+
+    @Override
+    public void onAudioEnabled(DecoderCounters counters) {
+
+    }
+
+    @Override
+    public void onAudioSessionId(int audioSessionId) {
+
+    }
+
+    @Override
+    public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+
+    }
+
+    @Override
+    public void onAudioInputFormatChanged(Format format) {
+
+    }
+
+    @Override
+    public void onAudioTrackUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
+
+    }
+
+    @Override
+    public void onAudioDisabled(DecoderCounters counters) {
+
     }
 }
