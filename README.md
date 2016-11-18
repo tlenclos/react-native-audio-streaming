@@ -53,8 +53,16 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
   	```
       compile project(':react-native-audio-streaming')
   	```
-
+  	
 ## Usage
+
+### iOS only : udate the Info.plist file of your project and add background mode
+
+```xml
+    <key>UIBackgroundModes</key>
+    <array>
+    <string>audio</string>
+```
 
 ### Playing sound (similar code used by the player UI)
 
