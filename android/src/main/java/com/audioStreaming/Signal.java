@@ -6,12 +6,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioTrack;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnInfoListener;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
@@ -21,17 +15,42 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.widget.RemoteViews;
+import android.os.Build;
+import android.net.Uri;
 
-import com.spoledge.aacdecoder.MultiPlayer;
-import com.spoledge.aacdecoder.PlayerCallback;
+import com.facebook.infer.annotation.Assertions;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ts.AdtsExtractor;
+import com.google.android.exoplayer2.metadata.MetadataRenderer;
+import com.google.android.exoplayer2.metadata.id3.ApicFrame;
+import com.google.android.exoplayer2.metadata.id3.GeobFrame;
+import com.google.android.exoplayer2.metadata.id3.Id3Frame;
+import com.google.android.exoplayer2.metadata.id3.PrivFrame;
+import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
+import com.google.android.exoplayer2.metadata.id3.TxxxFrame;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
-public class Signal extends Service implements OnErrorListener,
-        OnCompletionListener,
-        OnPreparedListener,
-        OnInfoListener,
-        PlayerCallback {
+import java.io.IOException;
+import java.util.List;
 
+public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output<List<Id3Frame>>, ExtractorMediaSource.EventListener {
+    private static final String TAG = "ReactNative";
 
     // Notification
     private Class<?> clsActivity;
@@ -39,60 +58,23 @@ public class Signal extends Service implements OnErrorListener,
     private NotificationCompat.Builder notifyBuilder;
     private NotificationManager notifyManager = null;
     public static RemoteViews remoteViews;
-    private MultiPlayer aacPlayer;
 
-    private static final int AAC_BUFFER_CAPACITY_MS = 2500;
-    private static final int AAC_DECODER_CAPACITY_MS = 700;
+    // Player
+    private SimpleExoPlayer player = null;
 
     public static final String BROADCAST_PLAYBACK_STOP = "stop",
             BROADCAST_PLAYBACK_PLAY = "pause",
             BROADCAST_EXIT = "exit";
 
-    private final Handler handler = new Handler();
     private final IBinder binder = new RadioBinder();
     private final SignalReceiver receiver = new SignalReceiver(this);
     private Context context;
     private String streamingURL;
-    public boolean isPlaying = false;
-    private boolean isPreparingStarted = false;
     private EventsReceiver eventsReceiver;
     private ReactNativeAudioStreamingModule module;
 
     private TelephonyManager phoneManager;
     private PhoneListener phoneStateListener;
-
-    public void setData(Context context, ReactNativeAudioStreamingModule module) {
-        this.context = context;
-        this.clsActivity = module.getClassActivity();
-        this.module = module;
-
-        this.eventsReceiver = new EventsReceiver(this.module);
-
-
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CREATED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.DESTROYED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STARTED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CONNECTING));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.START_PREPARING));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PREPARED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PLAYING));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STOPPED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.COMPLETED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ERROR));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_START));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_END));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.METADATA_UPDATED));
-        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ALBUM_UPDATED));
-
-
-        this.phoneStateListener = new PhoneListener(this.module);
-        this.phoneManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        if (this.phoneManager != null) {
-            this.phoneManager.listen(this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-        }
-
-
-    }
 
     @Override
     public void onCreate() {
@@ -101,57 +83,244 @@ public class Signal extends Service implements OnErrorListener,
         intentFilter.addAction(BROADCAST_PLAYBACK_PLAY);
         intentFilter.addAction(BROADCAST_EXIT);
         registerReceiver(this.receiver, intentFilter);
+    }
 
+    public void setData(Context context, ReactNativeAudioStreamingModule module) {
+        this.context = context;
+        this.clsActivity = module.getClassActivity();
+        this.module = module;
 
-        try {
-            this.aacPlayer = new MultiPlayer(this, AAC_BUFFER_CAPACITY_MS, AAC_DECODER_CAPACITY_MS);
-        } catch (UnsatisfiedLinkError e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+        this.eventsReceiver = new EventsReceiver(this.module);
+
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CREATED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.IDLE));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.DESTROYED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STARTED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CONNECTING));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PLAYING));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.READY));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.STOPPED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.PAUSED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.COMPLETED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ERROR));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_START));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_END));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.METADATA_UPDATED));
+        registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ALBUM_UPDATED));
+
+        this.phoneStateListener = new PhoneListener(this.module);
+        this.phoneManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if (this.phoneManager != null) {
+            this.phoneManager.listen(this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         }
+    }
 
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
 
-        this.notifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        try {
-            java.net.URL.setURLStreamHandlerFactory(new java.net.URLStreamHandlerFactory() {
-                public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
-                    if ("icy".equals(protocol)) {
-                        return new com.spoledge.aacdecoder.IcyURLStreamHandler();
-                    }
-                    return null;
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        Log.d("onPlayerStateChanged", ""+playbackState);
+
+        switch (playbackState) {
+            case ExoPlayer.STATE_IDLE:
+                sendBroadcast(new Intent(Mode.IDLE));
+                break;
+            case ExoPlayer.STATE_BUFFERING:
+
+                sendBroadcast(new Intent(Mode.BUFFERING_START));
+                break;
+            case ExoPlayer.STATE_READY:
+                if (this.player != null && this.player.getPlayWhenReady()) {
+                    sendBroadcast(new Intent(Mode.PLAYING));
+                } else {
+                    sendBroadcast(new Intent(Mode.READY));
                 }
-            });
-        } catch (Throwable t) {
-
+                break;
+            case ExoPlayer.STATE_ENDED:
+                sendBroadcast(new Intent(Mode.BUFFERING_START));
+                break;
         }
-
-        sendBroadcast(new Intent(Mode.CREATED));
     }
 
-    public void setURLStreaming(String streamingURL) {
-        this.streamingURL = streamingURL;
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {}
+
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+        Log.d(TAG, error.getMessage());
+        sendBroadcast(new Intent(Mode.ERROR));
+    }
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 
-    public void play() {
-        if (isConnected()) {
-            this.prepare();
-        } else {
-            sendBroadcast(new Intent(Mode.STOPPED));
+    private static String getDefaultUserAgent() {
+        StringBuilder result = new StringBuilder(64);
+        result.append("Dalvik/");
+        result.append(System.getProperty("java.vm.version")); // such as 1.1.0
+        result.append(" (Linux; U; Android ");
+
+        String version = Build.VERSION.RELEASE; // "1.0" or "3.4b5"
+        result.append(version.length() > 0 ? version : "1.0");
+
+        // add the model for the release build
+        if ("REL".equals(Build.VERSION.CODENAME)) {
+            String model = Build.MODEL;
+            if (model.length() > 0) {
+                result.append("; ");
+                result.append(model);
+            }
+        }
+        String id = Build.ID; // "MASTER" or "M4-rc20"
+        if (id.length() > 0) {
+            result.append(" Build/");
+            result.append(id);
+        }
+        result.append(")");
+        return result.toString();
+    }
+
+    /**
+     *  Player controls
+     */
+
+    public void play(String url) {
+        if (player != null ) {
+            player.setPlayWhenReady(false);
+            player.stop();
+            player.seekTo(0);
         }
 
-        this.isPlaying = true;
+        boolean playWhenReady = true; // TODO Allow user to customize this
+        this.streamingURL = url;
+
+        // Create player
+        Handler mainHandler = new Handler();
+        TrackSelector trackSelector = new DefaultTrackSelector(mainHandler);
+        LoadControl loadControl = new DefaultLoadControl();
+        this.player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
+
+        // Create source
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+        DataSource.Factory dataSourceFactory = new AudioStreamingDataSourceFactory(this.getApplication(), getDefaultUserAgent(), bandwidthMeter);
+        MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, mainHandler, this);
+
+        // Start preparing audio
+        player.prepare(audioSource);
+        player.addListener(this);
+        player.setId3Output(this);
+        player.setPlayWhenReady(playWhenReady);
+    }
+
+    public void start() {
+        Assertions.assertNotNull(player);
+        player.setPlayWhenReady(true);
+    }
+
+    public void pause() {
+        Assertions.assertNotNull(player);
+        player.setPlayWhenReady(false);
+        sendBroadcast(new Intent(Mode.STOPPED));
+    }
+
+    public void resume() {
+        Assertions.assertNotNull(player);
+        player.setPlayWhenReady(true);
     }
 
     public void stop() {
-        this.isPreparingStarted = false;
-
-        if (this.isPlaying) {
-            this.isPlaying = false;
-            this.aacPlayer.stop();
-        }
-
+        Assertions.assertNotNull(player);
+        player.setPlayWhenReady(false);
         sendBroadcast(new Intent(Mode.STOPPED));
+    }
+
+    public boolean isPlaying() {
+        Assertions.assertNotNull(player);
+        return player.getPlayWhenReady();
+    }
+
+    public long getDuration() {
+        Assertions.assertNotNull(player);
+        return player.getDuration();
+    }
+
+    public long getCurrentPosition() {
+        Assertions.assertNotNull(player);
+        return player.getCurrentPosition();
+    }
+
+    public int getBufferPercentage() {
+        Assertions.assertNotNull(player);
+        return player.getBufferedPercentage();
+    }
+
+    public void seekTo(long timeMillis) {
+        Assertions.assertNotNull(player);
+        player.seekTo(timeMillis);
+    }
+
+    public boolean isConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    /**
+     *  Meta data information
+     */
+
+    @Override
+    public void onMetadata(List<Id3Frame> id3Frames) {
+        for (Id3Frame id3Frame : id3Frames) {
+            if (id3Frame instanceof TxxxFrame) {
+                TxxxFrame txxxFrame = (TxxxFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s, value=%s", txxxFrame.id,
+                        txxxFrame.description, txxxFrame.value));
+            } else if (id3Frame instanceof PrivFrame) {
+                PrivFrame privFrame = (PrivFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: owner=%s", privFrame.id, privFrame.owner));
+            } else if (id3Frame instanceof GeobFrame) {
+                GeobFrame geobFrame = (GeobFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, filename=%s, description=%s",
+                        geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
+            } else if (id3Frame instanceof ApicFrame) {
+                ApicFrame apicFrame = (ApicFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, description=%s",
+                        apicFrame.id, apicFrame.mimeType, apicFrame.description));
+            } else if (id3Frame instanceof TextInformationFrame) {
+                TextInformationFrame textInformationFrame = (TextInformationFrame) id3Frame;
+                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s", textInformationFrame.id,
+                        textInformationFrame.description));
+            } else {
+                Log.i(TAG, String.format("ID3 TimedMetadata %s", id3Frame.id));
+            }
+        }
+    }
+
+    /**
+     *  Notification control
+     */
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return Service.START_NOT_STICKY;
+    }
+
+    // Notification
+    private PendingIntent makePendingIntent(String broadcast) {
+        Intent intent = new Intent(broadcast);
+        return PendingIntent.getBroadcast(this.context, 0, intent, 0);
     }
 
     public NotificationManager getNotifyManager() {
@@ -190,14 +359,10 @@ public class Signal extends Service implements OnErrorListener,
         notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
     }
 
-    private PendingIntent makePendingIntent(String broadcast) {
-        Intent intent = new Intent(broadcast);
-        return PendingIntent.getBroadcast(this.context, 0, intent, 0);
-    }
-
     public void clearNotification() {
-        if (notifyManager != null)
+        if (notifyManager != null) {
             notifyManager.cancel(NOTIFY_ME_ID);
+        }
     }
 
     public void exitNotification() {
@@ -207,147 +372,8 @@ public class Signal extends Service implements OnErrorListener,
         notifyManager = null;
     }
 
-    public boolean isConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            return true;
-        }
-        return false;
-    }
-
-    public void prepare() {
-        /* ------Station- buffering-------- */
-        this.isPreparingStarted = true;
-        sendBroadcast(new Intent(Mode.START_PREPARING));
-
-        try {
-            this.aacPlayer.playAsync(this.streamingURL);
-        } catch (Exception e) {
-            e.printStackTrace();
-            stop();
-        }
-    }
-
     @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
+    public void onLoadError(IOException error) {
+        Log.e(TAG, error.getMessage());
     }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (this.isPlaying) {
-            sendBroadcast(new Intent(Mode.PLAYING));
-        } else if (this.isPreparingStarted) {
-            sendBroadcast(new Intent(Mode.START_PREPARING));
-        } else {
-            sendBroadcast(new Intent(Mode.STARTED));
-        }
-
-        return Service.START_NOT_STICKY;
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer _mediaPlayer) {
-        this.isPreparingStarted = false;
-        sendBroadcast(new Intent(Mode.PREPARED));
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        this.isPlaying = false;
-        this.aacPlayer.stop();
-        sendBroadcast(new Intent(Mode.COMPLETED));
-    }
-
-    @Override
-    public boolean onInfo(MediaPlayer mp, int what, int extra) {
-        if (what == 701) {
-            this.isPlaying = false;
-            sendBroadcast(new Intent(Mode.BUFFERING_START));
-        } else if (what == 702) {
-            this.isPlaying = true;
-            sendBroadcast(new Intent(Mode.BUFFERING_END));
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        switch (what) {
-            case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
-                //Log.v("ERROR", "MEDIA ERROR NOT VALID FOR PROGRESSIVE PLAYBACK "	+ extra);
-                break;
-            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
-                //Log.v("ERROR", "MEDIA ERROR SERVER DIED " + extra);
-                break;
-            case MediaPlayer.MEDIA_ERROR_UNKNOWN:
-                //Log.v("ERROR", "MEDIA ERROR UNKNOWN " + extra);
-                break;
-        }
-        sendBroadcast(new Intent(Mode.ERROR));
-        return false;
-    }
-
-    @Override
-    public void playerStarted() {
-        //  TODO
-    }
-
-    @Override
-    public void playerPCMFeedBuffer(boolean isPlaying, int bufSizeMs, int bufCapacityMs) {
-        if (isPlaying) {
-            this.isPreparingStarted = false;
-            if (bufSizeMs < 500) {
-                this.isPlaying = false;
-                sendBroadcast(new Intent(Mode.BUFFERING_START));
-                //buffering
-            } else {
-                this.isPlaying = true;
-                sendBroadcast(new Intent(Mode.PLAYING));
-                //playing
-            }
-        } else {
-            //buffering
-            this.isPlaying = false;
-            sendBroadcast(new Intent(Mode.BUFFERING_START));
-        }
-    }
-
-    @Override
-    public void playerException(final Throwable t) {
-        this.isPlaying = false;
-        this.isPreparingStarted = false;
-        sendBroadcast(new Intent(Mode.ERROR));
-        //  TODO
-    }
-
-    @Override
-    public void playerMetadata(final String key, final String value) {
-        Intent metaIntent = new Intent(Mode.METADATA_UPDATED);
-        metaIntent.putExtra("key", key);
-        metaIntent.putExtra("value", value);
-        sendBroadcast(metaIntent);
-
-        if (key != null && key.equals("StreamTitle")) {
-            remoteViews.setTextViewText(R.id.song_name_notification, value);
-            notifyBuilder.setContent(remoteViews);
-            notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
-        }
-    }
-
-    @Override
-    public void playerAudioTrackCreated(AudioTrack atrack) {
-        //  TODO
-    }
-
-    @Override
-    public void playerStopped(int perf) {
-        this.isPlaying = false;
-        this.isPreparingStarted = false;
-        sendBroadcast(new Intent(Mode.STOPPED));
-        //  TODO
-    }
-
-
 }
