@@ -49,7 +49,8 @@ Update Info.plist file of your Xcode project and add audio background mode
 ```xml
     <key>UIBackgroundModes</key>
     <array>
-    <string>audio</string>
+      <string>audio</string>
+    </array>
 ```
 
 ### Next installation steps for Android
