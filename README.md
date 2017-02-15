@@ -21,7 +21,7 @@ If you are only looking to play local audio file with app in foreground, please 
 
 #### 1. Cocoapods installation
 
-1. add `pod 'RNAudioStreaming', :path => './node_modules/react-native-audio-streaming'` to `Podfile`
+1. add `pod 'RNAudioStreaming', :path => '../node_modules/react-native-audio-streaming'` to `Podfile`
 2. run `pod install`
 
 #### 2. Mostly automatic installation
