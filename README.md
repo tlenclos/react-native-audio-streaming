@@ -28,7 +28,7 @@ If you are only looking to play local audio file with app in foreground, please 
 
 `$ react-native link react-native-audio-streaming`
 
-Go to `node_modules` ➜ `react-native-audio-streaming` => `Pods` and drag/drop `Pods.xcodeproj` to the Libraries folder in your XCode project.
+Go to `node_modules` ➜ `react-native-audio-streaming` => `ios` => `Pods` and drag/drop `Pods.xcodeproj` to the Libraries folder in your XCode project.
 
 In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 
