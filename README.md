@@ -42,9 +42,11 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
 3. In XCode, in the project navigator, select your project. Add `libReactNativeAudioStreaming.a` and `libStreamingKit.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
 4. Run your project (`Cmd+R`)
 
-### Final step for iOS (required after doing any of three options above)
+### Final steps for iOS (required after doing any of three options above)
 
-Update Info.plist file of your Xcode project and add audio background mode
+1. Make sure `$(SRCROOT)/../node_modules/react-native-audio-streaming/ios` is added to your project's `Header Search Paths` within the `Build Settings` section.
+
+2. Update Info.plist file of your Xcode project and add audio background mode
 
 ```xml
     <key>UIBackgroundModes</key>
