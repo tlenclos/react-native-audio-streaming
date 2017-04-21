@@ -208,7 +208,7 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         // Create source
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        DataSource.Factory dataSourceFactory = new AudioStreamingDataSourceFactory(this.getApplication(), getDefaultUserAgent(), bandwidthMeter);
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this.getApplication(), getDefaultUserAgent(), bandwidthMeter);
         MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, mainHandler, this);
 
         // Start preparing audio
