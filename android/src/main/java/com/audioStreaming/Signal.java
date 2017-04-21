@@ -51,31 +51,31 @@ import java.util.List;
 
 public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output<List<Id3Frame>>, ExtractorMediaSource.EventListener {
     private static final String TAG = "ReactNative";
-
+    
     // Notification
     private Class<?> clsActivity;
     private static final int NOTIFY_ME_ID = 696969;
     private NotificationCompat.Builder notifyBuilder;
     private NotificationManager notifyManager = null;
     public static RemoteViews remoteViews;
-
+    
     // Player
     private SimpleExoPlayer player = null;
-
+    
     public static final String BROADCAST_PLAYBACK_STOP = "stop",
-            BROADCAST_PLAYBACK_PLAY = "pause",
-            BROADCAST_EXIT = "exit";
-
+    BROADCAST_PLAYBACK_PLAY = "pause",
+    BROADCAST_EXIT = "exit";
+    
     private final IBinder binder = new RadioBinder();
     private final SignalReceiver receiver = new SignalReceiver(this);
     private Context context;
     private String streamingURL;
     private EventsReceiver eventsReceiver;
     private ReactNativeAudioStreamingModule module;
-
+    
     private TelephonyManager phoneManager;
     private PhoneListener phoneStateListener;
-
+    
     @Override
     public void onCreate() {
         IntentFilter intentFilter = new IntentFilter();
@@ -84,14 +84,14 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         intentFilter.addAction(BROADCAST_EXIT);
         registerReceiver(this.receiver, intentFilter);
     }
-
+    
     public void setData(Context context, ReactNativeAudioStreamingModule module) {
         this.context = context;
         this.clsActivity = module.getClassActivity();
         this.module = module;
-
+        
         this.eventsReceiver = new EventsReceiver(this.module);
-
+        
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.CREATED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.IDLE));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.DESTROYED));
@@ -107,29 +107,29 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_END));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.METADATA_UPDATED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ALBUM_UPDATED));
-
+        
         this.phoneStateListener = new PhoneListener(this.module);
         this.phoneManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         if (this.phoneManager != null) {
             this.phoneManager.listen(this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         }
     }
-
+    
     @Override
     public void onLoadingChanged(boolean isLoading) {
-
+        
     }
-
+    
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         Log.d("onPlayerStateChanged", ""+playbackState);
-
+        
         switch (playbackState) {
             case ExoPlayer.STATE_IDLE:
                 sendBroadcast(new Intent(Mode.IDLE));
                 break;
             case ExoPlayer.STATE_BUFFERING:
-
+                
                 sendBroadcast(new Intent(Mode.BUFFERING_START));
                 break;
             case ExoPlayer.STATE_READY:
@@ -140,15 +140,15 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
                 }
                 break;
             case ExoPlayer.STATE_ENDED:
-                sendBroadcast(new Intent(Mode.BUFFERING_START));
+                sendBroadcast(new Intent(Mode.STOPPED));
                 break;
         }
     }
-
+    
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {}
-
-
+    
+    
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         Log.d(TAG, error.getMessage());
@@ -156,18 +156,18 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
     }
     @Override
     public void onPositionDiscontinuity() {
-
+        
     }
-
+    
     private static String getDefaultUserAgent() {
         StringBuilder result = new StringBuilder(64);
         result.append("Dalvik/");
         result.append(System.getProperty("java.vm.version")); // such as 1.1.0
         result.append(" (Linux; U; Android ");
-
+        
         String version = Build.VERSION.RELEASE; // "1.0" or "3.4b5"
         result.append(version.length() > 0 ? version : "1.0");
-
+        
         // add the model for the release build
         if ("REL".equals(Build.VERSION.CODENAME)) {
             String model = Build.MODEL;
@@ -184,194 +184,194 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         result.append(")");
         return result.toString();
     }
-
+    
     /**
      *  Player controls
      */
-
+    
     public void play(String url) {
         if (player != null ) {
             player.setPlayWhenReady(false);
             player.stop();
             player.seekTo(0);
         }
-
+        
         boolean playWhenReady = true; // TODO Allow user to customize this
         this.streamingURL = url;
-
+        
         // Create player
         Handler mainHandler = new Handler();
         TrackSelector trackSelector = new DefaultTrackSelector(mainHandler);
         LoadControl loadControl = new DefaultLoadControl();
         this.player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
-
+        
         // Create source
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this.getApplication(), getDefaultUserAgent(), bandwidthMeter);
         MediaSource audioSource = new ExtractorMediaSource(Uri.parse(this.streamingURL), dataSourceFactory, extractorsFactory, mainHandler, this);
-
+        
         // Start preparing audio
         player.prepare(audioSource);
         player.addListener(this);
         player.setId3Output(this);
         player.setPlayWhenReady(playWhenReady);
     }
-
+    
     public void start() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(true);
     }
-
+    
     public void pause() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(false);
         sendBroadcast(new Intent(Mode.STOPPED));
     }
-
+    
     public void resume() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(true);
     }
-
+    
     public void stop() {
         Assertions.assertNotNull(player);
         player.setPlayWhenReady(false);
         sendBroadcast(new Intent(Mode.STOPPED));
     }
-
+    
     public boolean isPlaying() {
         Assertions.assertNotNull(player);
-        return player.getPlayWhenReady();
+        return player.getPlayWhenReady() && player.getPlaybackState() != ExoPlayer.STATE_ENDED;
     }
-
+    
     public long getDuration() {
         Assertions.assertNotNull(player);
         return player.getDuration();
     }
-
+    
     public long getCurrentPosition() {
         Assertions.assertNotNull(player);
         return player.getCurrentPosition();
     }
-
+    
     public int getBufferPercentage() {
         Assertions.assertNotNull(player);
         return player.getBufferedPercentage();
     }
-
+    
     public void seekTo(long timeMillis) {
         Assertions.assertNotNull(player);
         player.seekTo(timeMillis);
     }
-
+    
     public boolean isConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
-
+    
     /**
      *  Meta data information
      */
-
+    
     @Override
     public void onMetadata(List<Id3Frame> id3Frames) {
         for (Id3Frame id3Frame : id3Frames) {
             if (id3Frame instanceof TxxxFrame) {
                 TxxxFrame txxxFrame = (TxxxFrame) id3Frame;
                 Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s, value=%s", txxxFrame.id,
-                        txxxFrame.description, txxxFrame.value));
+                                         txxxFrame.description, txxxFrame.value));
             } else if (id3Frame instanceof PrivFrame) {
                 PrivFrame privFrame = (PrivFrame) id3Frame;
                 Log.i(TAG, String.format("ID3 TimedMetadata %s: owner=%s", privFrame.id, privFrame.owner));
             } else if (id3Frame instanceof GeobFrame) {
                 GeobFrame geobFrame = (GeobFrame) id3Frame;
                 Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, filename=%s, description=%s",
-                        geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
+                                         geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
             } else if (id3Frame instanceof ApicFrame) {
                 ApicFrame apicFrame = (ApicFrame) id3Frame;
                 Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, description=%s",
-                        apicFrame.id, apicFrame.mimeType, apicFrame.description));
+                                         apicFrame.id, apicFrame.mimeType, apicFrame.description));
             } else if (id3Frame instanceof TextInformationFrame) {
                 TextInformationFrame textInformationFrame = (TextInformationFrame) id3Frame;
                 Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s", textInformationFrame.id,
-                        textInformationFrame.description));
+                                         textInformationFrame.description));
             } else {
                 Log.i(TAG, String.format("ID3 TimedMetadata %s", id3Frame.id));
             }
         }
     }
-
+    
     /**
      *  Notification control
      */
-
+    
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
     }
-
+    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return Service.START_NOT_STICKY;
     }
-
+    
     // Notification
     private PendingIntent makePendingIntent(String broadcast) {
         Intent intent = new Intent(broadcast);
         return PendingIntent.getBroadcast(this.context, 0, intent, 0);
     }
-
+    
     public NotificationManager getNotifyManager() {
         return notifyManager;
     }
-
+    
     public class RadioBinder extends Binder {
         public Signal getService() {
             return Signal.this;
         }
     }
-
+    
     public void showNotification() {
         remoteViews = new RemoteViews(context.getPackageName(), R.layout.streaming_notification_player);
         notifyBuilder = new NotificationCompat.Builder(this.context)
-                .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off) // TODO Use app icon instead
-                .setContentText("")
-                .setOngoing(true)
-                .setContent(remoteViews);
-
+        .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off) // TODO Use app icon instead
+        .setContentText("")
+        .setOngoing(true)
+        .setContent(remoteViews);
+        
         Intent resultIntent = new Intent(this.context, this.clsActivity);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
+        
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this.context);
         stackBuilder.addParentStack(this.clsActivity);
         stackBuilder.addNextIntent(resultIntent);
-
+        
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
+                                                                          PendingIntent.FLAG_UPDATE_CURRENT);
+        
         notifyBuilder.setContentIntent(resultPendingIntent);
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_play, makePendingIntent(BROADCAST_PLAYBACK_PLAY));
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_stop, makePendingIntent(BROADCAST_EXIT));
         notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
     }
-
+    
     public void clearNotification() {
         if (notifyManager != null) {
             notifyManager.cancel(NOTIFY_ME_ID);
         }
     }
-
+    
     public void exitNotification() {
         notifyManager.cancelAll();
         clearNotification();
         notifyBuilder = null;
         notifyManager = null;
     }
-
+    
     @Override
     public void onLoadError(IOException error) {
         Log.e(TAG, error.getMessage());
