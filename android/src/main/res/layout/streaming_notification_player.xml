@@ -11,6 +11,7 @@
     android:layout_alignParentLeft="true"
     android:src="@android:drawable/ic_lock_silent_mode_off"
     android:layout_marginRight="8dp"
+    android:layout_marginLeft="2dp"
     />
     <RelativeLayout
         android:layout_width = "match_parent"
@@ -49,16 +50,19 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center_vertical"
-            android:layout_marginRight="5dp"
-            android:src="@android:drawable/ic_media_play" />
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="0dp"
+            android:src="@android:drawable/ic_media_play"
+            android:background="@null"/>
             <ImageButton
             android:id="@+id/btn_streaming_notification_stop"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_toRightOf="@+id/btn_streaming_notification_play"
             android:layout_gravity="center_vertical"
-            android:layout_marginRight="10dp"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:layout_marginLeft="0dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:background="@null"/>
             <TextView
             android:id="@+id/song_name_notification"
             android:layout_width="match_parent"
