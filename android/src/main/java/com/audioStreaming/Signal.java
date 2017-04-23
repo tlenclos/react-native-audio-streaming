@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
@@ -19,6 +20,9 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.os.Build;
 import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.content.pm.ApplicationInfo;
 
 import com.facebook.infer.annotation.Assertions;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -333,13 +337,28 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         }
     }
     
+    public String getAppTitle() {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        int stringId = applicationInfo.labelRes;
+        String title = stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
+        return title;
+    }
+    
     public void showNotification() {
-        remoteViews = new RemoteViews(context.getPackageName(), R.layout.streaming_notification_player);
+        Resources res = context.getResources();
+        String packageName = context.getPackageName();
+        int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
+        int largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
+        Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
+        remoteViews = new RemoteViews(packageName, R.layout.streaming_notification_player);
         notifyBuilder = new NotificationCompat.Builder(this.context)
-        .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off) // TODO Use app icon instead
-        .setContentText("")
+        .setContent(remoteViews)
+        .setSmallIcon(smallIconResId)
+        .setLargeIcon(largeIconBitmap)
+        .setContentTitle(this.getAppTitle())
+        .setContentText("Playing an audio file")
         .setOngoing(true)
-        .setContent(remoteViews);
+        ;
         
         Intent resultIntent = new Intent(this.context, this.clsActivity);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -353,6 +372,10 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
                                                                           PendingIntent.FLAG_UPDATE_CURRENT);
         
         notifyBuilder.setContentIntent(resultPendingIntent);
+        
+        remoteViews.setTextViewText(R.id.title, this.getAppTitle());
+        remoteViews.setTextViewText(R.id.subtitle, "Playing an audio file");
+        remoteViews.setImageViewResource(R.id.streaming_icon, largeIconResId);
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_play, makePendingIntent(BROADCAST_PLAYBACK_PLAY));
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_stop, makePendingIntent(BROADCAST_EXIT));
         notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
