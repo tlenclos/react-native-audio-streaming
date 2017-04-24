@@ -115,6 +115,10 @@ implements ServiceConnection {
         signal.exitNotification();
     }
     
+    @ReactMethod public void seekToTime(int seconds) {
+        signal.seekTo(seconds * 1000);
+    }
+    
     @ReactMethod public void getStatus(Callback callback) {
         WritableMap state = Arguments.createMap();
         state.putDouble("duration", signal.getDuration());
