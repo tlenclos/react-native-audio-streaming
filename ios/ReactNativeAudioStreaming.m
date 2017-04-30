@@ -52,6 +52,7 @@ RCT_EXPORT_MODULE()
                                                                                         @"duration": duration,
                                                                                         @"url": url,
                                                                                         }];
+        [self setNowPlayingInfo:true];
     }
 }
 
@@ -423,6 +424,19 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
     [skipForwardIntervalCommand setEnabled:YES];
     [skipForwardIntervalCommand addTarget:self action:@selector(skipForwardEvent:)];
     
+    [commandCenter.changePlaybackPositionCommand
+     addTarget: self
+     action: @selector( onChangePlaybackPositionCommand: )];
+}
+
+- (MPRemoteCommandHandlerStatus)onChangePlaybackPositionCommand:(MPChangePlaybackPositionCommandEvent *)event
+{
+    // change position
+    [self seekToTime:event.positionTime];
+    // update MPNowPlayingInfoPropertyElapsedPlaybackTime
+    //[[MPNowPlayingInfoCenter defaultCenter] setNowPlayingInfo:songInfo];
+    
+    return MPRemoteCommandHandlerStatusSuccess;
 }
 
 -(void)skipBackwardEvent: (MPSkipIntervalCommandEvent *)skipEvent
@@ -469,23 +483,13 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
                                         self.currentSong ? self.currentSong : @"Playing an audio file", MPMediaItemPropertyAlbumTitle,
                                         @"", MPMediaItemPropertyAlbumArtist,
                                         appName ? appName : @"AppName", MPMediaItemPropertyTitle,
+                                        [NSNumber numberWithDouble: self.audioPlayer.progress], MPNowPlayingInfoPropertyElapsedPlaybackTime,
+                                        [NSNumber numberWithDouble: self.audioPlayer.duration], MPMediaItemPropertyPlaybackDuration,
                                         [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
         [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
     } else {
         [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
     }
 }
-
-// - (void) updateRemoteControls
-// {
-//    MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
-
-//    if (self.audioPlayer) {
-//        if ([self.audioPlayer state] == STKAudioPlayerStatePlaying)
-//            commandCenter.playCommand.enabled = NO;
-//        else if ([self.audioPlayer state] == STKAudioPlayerStatePaused)
-//            commandCenter.playCommand.enabled = YES;
-//    }
-// }
 
 @end
