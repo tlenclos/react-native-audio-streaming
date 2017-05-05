@@ -49,8 +49,13 @@ class Player extends Component {
         );
 
         ReactNativeAudioStreaming.getStatus((error, status) => {
+          console.log('Status', status);
             (error) ? console.log(error) : this.setState(status)
         });
+    }
+
+    componentWillUnmount() {
+      this.subscription.remove();
     }
 
     _onPress() {
