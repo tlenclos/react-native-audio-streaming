@@ -444,8 +444,6 @@ RCT_EXPORT_METHOD(getStatus: (RCTResponseSenderBlock) callback)
                                       appName ? appName : @"AppName", MPMediaItemPropertyTitle,
                                       [NSNumber numberWithFloat:isPlaying ? 1.0f : 0.0], MPNowPlayingInfoPropertyPlaybackRate, nil];
       [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
-   } else {
-      [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
    }
 }
 
