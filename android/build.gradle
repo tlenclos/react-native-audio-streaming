@@ -23,4 +23,3 @@ dependencies {
     compile 'com.facebook.react:react-native:0.20.+'
     compile files('libs/aacdecoder-android-0.8.jar')
 }
-  

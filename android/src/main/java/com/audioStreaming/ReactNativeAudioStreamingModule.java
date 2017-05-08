@@ -120,6 +120,10 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
   @ReactMethod public void getStatus(Callback callback) {
     WritableMap state = Arguments.createMap();
     state.putString("status", signal != null && signal.isPlaying ? Mode.PLAYING : Mode.STOPPED);
+    state.putString("url", signal.getStreamingURL());
+    state.putDouble("duration", signal.duration);
+    state.putDouble("progress", signal.progress);
+
     callback.invoke(null, state);
   }
 }

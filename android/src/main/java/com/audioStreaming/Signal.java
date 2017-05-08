@@ -53,10 +53,13 @@ public class Signal extends Service implements OnErrorListener,
     private final SignalReceiver receiver = new SignalReceiver(this);
     private Context context;
     private String streamingURL;
-    public boolean isPlaying = false;
     private boolean isPreparingStarted = false;
     private EventsReceiver eventsReceiver;
     private ReactNativeAudioStreamingModule module;
+
+    public boolean isPlaying = false;
+    public double duration;
+    public double progress;
 
     private TelephonyManager phoneManager;
     private PhoneListener phoneStateListener;
@@ -132,6 +135,8 @@ public class Signal extends Service implements OnErrorListener,
     public void setURLStreaming(String streamingURL) {
         this.streamingURL = streamingURL;
     }
+
+    public String getStreamingURL() { return this.streamingURL; }
 
     public void play() {
         if (isConnected()) {
@@ -237,9 +242,13 @@ public class Signal extends Service implements OnErrorListener,
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (this.isPlaying) {
-            sendBroadcast(new Intent(Mode.PLAYING));
+            Intent BroadcastIntent = new Intent(Mode.PLAYING);
+            BroadcastIntent.putExtra("url", this.streamingURL);
+            sendBroadcast(BroadcastIntent);
         } else if (this.isPreparingStarted) {
-            sendBroadcast(new Intent(Mode.START_PREPARING));
+            Intent BroadcastIntent = new Intent(Mode.START_PREPARING);
+            BroadcastIntent.putExtra("url", this.streamingURL);
+            sendBroadcast(BroadcastIntent);
         } else {
             sendBroadcast(new Intent(Mode.STARTED));
         }
@@ -300,17 +309,36 @@ public class Signal extends Service implements OnErrorListener,
             this.isPreparingStarted = false;
             if (bufSizeMs < 500) {
                 this.isPlaying = false;
-                sendBroadcast(new Intent(Mode.BUFFERING_START));
+                Intent BroadcastIntent = new Intent(Mode.BUFFERING_START);
+                BroadcastIntent.putExtra("url", this.streamingURL);
+                this.duration = bufCapacityMs / 1000.0;
+                this.progress = (bufCapacityMs - bufSizeMs) / 1000.0;
+                BroadcastIntent.putExtra("duration", this.duration);
+                BroadcastIntent.putExtra("progress", this.progress);
+                sendBroadcast(BroadcastIntent);
                 //buffering
             } else {
                 this.isPlaying = true;
-                sendBroadcast(new Intent(Mode.PLAYING));
+                Intent BroadcastIntent = new Intent(Mode.PLAYING);
+                BroadcastIntent.putExtra("url", this.streamingURL);
+                this.duration = bufCapacityMs / 1000.0;
+                this.progress = (bufCapacityMs - bufSizeMs) / 1000.0;
+                BroadcastIntent.putExtra("duration", this.duration);
+                BroadcastIntent.putExtra("progress", this.progress);
+
+                sendBroadcast(BroadcastIntent);
                 //playing
             }
         } else {
             //buffering
             this.isPlaying = false;
-            sendBroadcast(new Intent(Mode.BUFFERING_START));
+            Intent BroadcastIntent = new Intent(Mode.BUFFERING_START);
+            BroadcastIntent.putExtra("url", this.streamingURL);
+            this.duration = bufCapacityMs / 1000.0;
+            this.progress = (bufCapacityMs - bufSizeMs) / 1000.0;
+            BroadcastIntent.putExtra("duration", this.duration);
+            BroadcastIntent.putExtra("progress", this.progress);
+            sendBroadcast(BroadcastIntent);
         }
     }
 
