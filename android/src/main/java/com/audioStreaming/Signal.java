@@ -55,31 +55,31 @@ import java.util.List;
 
 public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output<List<Id3Frame>>, ExtractorMediaSource.EventListener {
     private static final String TAG = "ReactNative";
-    
+
     // Notification
     private Class<?> clsActivity;
     private static final int NOTIFY_ME_ID = 696969;
     private NotificationCompat.Builder notifyBuilder;
     private NotificationManager notifyManager = null;
     public static RemoteViews remoteViews;
-    
+
     // Player
     private SimpleExoPlayer player = null;
-    
+
     public static final String BROADCAST_PLAYBACK_STOP = "stop",
-    BROADCAST_PLAYBACK_PLAY = "pause",
-    BROADCAST_EXIT = "exit";
-    
+            BROADCAST_PLAYBACK_PLAY = "pause",
+            BROADCAST_EXIT = "exit";
+
     private final IBinder binder = new RadioBinder();
     private final SignalReceiver receiver = new SignalReceiver(this);
     private Context context;
     private String streamingURL;
     private EventsReceiver eventsReceiver;
     private ReactNativeAudioStreamingModule module;
-    
+
     private TelephonyManager phoneManager;
     private PhoneListener phoneStateListener;
-    
+
     @Override
     public void onCreate() {
         IntentFilter intentFilter = new IntentFilter();
@@ -111,29 +111,29 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.BUFFERING_END));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.METADATA_UPDATED));
         registerReceiver(this.eventsReceiver, new IntentFilter(Mode.ALBUM_UPDATED));
-        
+
         this.phoneStateListener = new PhoneListener(this.module);
         this.phoneManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         if (this.phoneManager != null) {
             this.phoneManager.listen(this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         }
     }
-    
+
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        
+
     }
-    
+
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         Log.d("onPlayerStateChanged", ""+playbackState);
-        
+
         switch (playbackState) {
             case ExoPlayer.STATE_IDLE:
                 sendBroadcast(new Intent(Mode.IDLE));
                 break;
             case ExoPlayer.STATE_BUFFERING:
-                
+
                 sendBroadcast(new Intent(Mode.BUFFERING_START));
                 break;
             case ExoPlayer.STATE_READY:
@@ -148,7 +148,7 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
                 break;
         }
     }
-    
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest) {}
     
@@ -160,18 +160,18 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
     }
     @Override
     public void onPositionDiscontinuity() {
-        
+
     }
-    
+
     private static String getDefaultUserAgent() {
         StringBuilder result = new StringBuilder(64);
         result.append("Dalvik/");
         result.append(System.getProperty("java.vm.version")); // such as 1.1.0
         result.append(" (Linux; U; Android ");
-        
+
         String version = Build.VERSION.RELEASE; // "1.0" or "3.4b5"
         result.append(version.length() > 0 ? version : "1.0");
-        
+
         // add the model for the release build
         if ("REL".equals(Build.VERSION.CODENAME)) {
             String model = Build.MODEL;
