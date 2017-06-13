@@ -126,6 +126,7 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     state.putDouble("duration", signal.getDuration());
     state.putDouble("progress", signal.getCurrentPosition());
     state.putString("status", signal != null && signal.isPlaying() ? Mode.PLAYING : Mode.STOPPED);
+    state.putString("url", signal.getStreamingURL());
     callback.invoke(null, state);
   }
 }

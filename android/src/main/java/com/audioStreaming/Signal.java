@@ -394,6 +394,10 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         notifyBuilder = null;
         notifyManager = null;
     }
+
+    public String getStreamingURL() {
+        return this.streamingURL;
+    }
     
     @Override
     public void onLoadError(IOException error) {
