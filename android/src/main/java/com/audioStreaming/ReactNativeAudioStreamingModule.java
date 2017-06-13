@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import javax.annotation.Nullable;
+import android.app.Activity;
 
 public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     implements ServiceConnection {
@@ -39,8 +40,9 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
   }
     
   public Class<?> getClassActivity() {
-    if (this.clsActivity == null) {
-      this.clsActivity = getCurrentActivity().getClass();
+    Activity activity = getCurrentActivity();
+    if (this.clsActivity == null && activity != null) {
+      this.clsActivity = activity.getClass();
     }
     return this.clsActivity;
   }
