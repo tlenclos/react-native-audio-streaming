@@ -245,18 +245,18 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
     }
     
     public boolean isPlaying() {
-        Assertions.assertNotNull(player);
-        return player.getPlayWhenReady() && player.getPlaybackState() != ExoPlayer.STATE_ENDED;
+        //Assertions.assertNotNull(player);
+        return player != null && player.getPlayWhenReady() && player.getPlaybackState() != ExoPlayer.STATE_ENDED;
     }
     
     public long getDuration() {
-        Assertions.assertNotNull(player);
-        return player.getDuration();
+        //Assertions.assertNotNull(player);
+        return player != null ? player.getDuration() : new Long(0);
     }
     
     public long getCurrentPosition() {
-        Assertions.assertNotNull(player);
-        return player.getCurrentPosition();
+        //Assertions.assertNotNull(player);
+        return player != null ? player.getCurrentPosition() : new Long(0);
     }
     
     public int getBufferPercentage() {
@@ -398,7 +398,7 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
     public String getStreamingURL() {
         return this.streamingURL;
     }
-    
+
     @Override
     public void onLoadError(IOException error) {
         Log.e(TAG, error.getMessage());
