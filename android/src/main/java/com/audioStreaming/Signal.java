@@ -345,6 +345,9 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
     }
     
     public void showNotification() {
+        if (this.clsActivity == null) { 
+            this.clsActivity = this.module.getClassActivity();
+        }
         Resources res = context.getResources();
         String packageName = context.getPackageName();
         int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
