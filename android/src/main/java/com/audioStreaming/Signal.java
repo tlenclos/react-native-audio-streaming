@@ -41,7 +41,6 @@ import com.google.android.exoplayer2.metadata.id3.GeobFrame;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
 import com.google.android.exoplayer2.metadata.id3.PrivFrame;
 import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
-import com.google.android.exoplayer2.metadata.id3.TxxxFrame;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -49,11 +48,15 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.metadata.Metadata;
 
 import java.io.IOException;
 import java.util.List;
 
-public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output<List<Id3Frame>>, ExtractorMediaSource.EventListener {
+public class Signal extends Service implements ExoPlayer.EventListener, MetadataRenderer.Output, ExtractorMediaSource.EventListener {
     private static final String TAG = "ReactNative";
 
     // Notification
@@ -87,6 +90,16 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         intentFilter.addAction(BROADCAST_PLAYBACK_PLAY);
         intentFilter.addAction(BROADCAST_EXIT);
         registerReceiver(this.receiver, intentFilter);
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
+    }
+
+    @Override
+    public void     onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
     }
     
     public void setData(Context context, ReactNativeAudioStreamingModule module) {
@@ -205,7 +218,7 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         
         // Create player
         Handler mainHandler = new Handler();
-        TrackSelector trackSelector = new DefaultTrackSelector(mainHandler);
+        TrackSelector trackSelector = new DefaultTrackSelector();
         LoadControl loadControl = new DefaultLoadControl();
         this.player = ExoPlayerFactory.newSimpleInstance(this.getApplicationContext(), trackSelector, loadControl);
         
@@ -218,7 +231,6 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         // Start preparing audio
         player.prepare(audioSource);
         player.addListener(this);
-        player.setId3Output(this);
         player.setPlayWhenReady(playWhenReady);
     }
     
@@ -274,37 +286,19 @@ public class Signal extends Service implements ExoPlayer.EventListener, Metadata
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
+
+    public void setPlaybackRate(float speed) {
+        PlaybackParameters pp = new PlaybackParameters(speed, 1);
+        player.setPlaybackParameters(pp);
+    }
     
     /**
      *  Meta data information
      */
     
     @Override
-    public void onMetadata(List<Id3Frame> id3Frames) {
-        for (Id3Frame id3Frame : id3Frames) {
-            if (id3Frame instanceof TxxxFrame) {
-                TxxxFrame txxxFrame = (TxxxFrame) id3Frame;
-                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s, value=%s", txxxFrame.id,
-                                         txxxFrame.description, txxxFrame.value));
-            } else if (id3Frame instanceof PrivFrame) {
-                PrivFrame privFrame = (PrivFrame) id3Frame;
-                Log.i(TAG, String.format("ID3 TimedMetadata %s: owner=%s", privFrame.id, privFrame.owner));
-            } else if (id3Frame instanceof GeobFrame) {
-                GeobFrame geobFrame = (GeobFrame) id3Frame;
-                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, filename=%s, description=%s",
-                                         geobFrame.id, geobFrame.mimeType, geobFrame.filename, geobFrame.description));
-            } else if (id3Frame instanceof ApicFrame) {
-                ApicFrame apicFrame = (ApicFrame) id3Frame;
-                Log.i(TAG, String.format("ID3 TimedMetadata %s: mimeType=%s, description=%s",
-                                         apicFrame.id, apicFrame.mimeType, apicFrame.description));
-            } else if (id3Frame instanceof TextInformationFrame) {
-                TextInformationFrame textInformationFrame = (TextInformationFrame) id3Frame;
-                Log.i(TAG, String.format("ID3 TimedMetadata %s: description=%s", textInformationFrame.id,
-                                         textInformationFrame.description));
-            } else {
-                Log.i(TAG, String.format("ID3 TimedMetadata %s", id3Frame.id));
-            }
-        }
+    public void onMetadata(Metadata metadata) {
+
     }
     
     /**

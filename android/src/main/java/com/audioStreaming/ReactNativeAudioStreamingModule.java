@@ -129,4 +129,8 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     state.putString("url", signal.getStreamingURL());
     callback.invoke(null, state);
   }
+
+  @ReactMethod public void setCurrentPlaybackRate(float speed) {
+    signal.setPlaybackRate(speed);
+  }
 }
