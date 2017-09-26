@@ -9,7 +9,7 @@ import {
     ActivityIndicator,
     Platform
 } from 'react-native';
-
+import PropTypes from 'prop-types';
 const { ReactNativeAudioStreaming } = NativeModules;
 
 // Possibles states
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
 });
 
 Player.propTypes = {
-    url: React.PropTypes.string.isRequired
+    url: PropTypes.string.isRequired
 };
 
 export { Player, ReactNativeAudioStreaming }
