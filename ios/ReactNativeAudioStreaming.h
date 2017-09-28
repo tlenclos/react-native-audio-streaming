@@ -1,7 +1,12 @@
 // AudioManager.h
 // From https://github.com/jhabdas/lumpen-radio/blob/master/iOS/Classes/AudioManager.h
 
+#if __has_include(<React/RCTBridgeModule.h>)
+#import <React/RCTBridgeModule.h>
+#else
 #import "RCTBridgeModule.h"
+#endif
+
 #import "STKAudioPlayer.h"
 
 @interface ReactNativeAudioStreaming : NSObject <RCTBridgeModule, STKAudioPlayerDelegate>
