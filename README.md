@@ -15,7 +15,7 @@ If you are only looking to play local audio file with app in foreground, please 
 
 ## Getting started
 
-`$ npm install react-native-audio-streaming --save`
+`$ npm install git://github.com/tlenclos/react-native-audio-streaming#android-exoplayer --save`
 
 ### Mostly automatic installation
 
