@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.IBinder;
 import android.util.Log;
 import com.facebook.react.bridge.Arguments;
@@ -84,12 +85,50 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     signal = null;
   }
 
+  private AudioManager.OnAudioFocusChangeListener focusChangeListener =
+          new AudioManager.OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+              AudioManager am =(AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+              switch (focusChange) {
+
+                case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) :
+                  // Lower the volume while ducking.
+//                    aacPlayer.setVolume(0.2f, 0.2f);
+                  break;
+                case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) :
+                  stop();
+                  break;
+
+                case (AudioManager.AUDIOFOCUS_LOSS) :
+                  stop();
+//                    ComponentName component =new ComponentName(AudioPlayerActivity.this,MediaControlReceiver.class);
+//                    am.unregisterMediaButtonEventReceiver(component);
+                  break;
+
+                case (AudioManager.AUDIOFOCUS_GAIN) :
+                  // Return the volume to normal and resume if paused.
+//                    mediaPlayer.setVolume(1f, 1f);
+//                    mediaPlayer.start();
+                  break;
+                default: break;
+              }
+            }
+          };
+
   @ReactMethod public void play(String streamingURL, ReadableMap options) {
-    this.streamingURL = streamingURL;
-    this.shouldShowNotification =
-        options.hasKey(SHOULD_SHOW_NOTIFICATION) && options.getBoolean(SHOULD_SHOW_NOTIFICATION);
-    signal.setURLStreaming(streamingURL); // URL of MP3 or AAC stream
-    playInternal();
+
+    AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+    int amResult = am.requestAudioFocus(focusChangeListener,
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN);
+
+    if (amResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+      this.streamingURL = streamingURL;
+      this.shouldShowNotification =
+              options.hasKey(SHOULD_SHOW_NOTIFICATION) && options.getBoolean(SHOULD_SHOW_NOTIFICATION);
+      signal.setURLStreaming(streamingURL); // URL of MP3 or AAC stream
+      playInternal();
+    }
   }
 
   private void playInternal() {
