@@ -1,5 +1,29 @@
 # Change Log
 
+## [v2.3.2](https://github.com/tlenclos/react-native-audio-streaming/tree/v2.3.2) (2017-02-25)
+[Full Changelog](https://github.com/tlenclos/react-native-audio-streaming/compare/v2.3.1...v2.3.2)
+
+**Fixed bugs:**
+
+- Android notifcation player doesn't go away [\#49](https://github.com/tlenclos/react-native-audio-streaming/issues/49)
+
+**Closed issues:**
+
+- Support for RN \>=0.40 [\#72](https://github.com/tlenclos/react-native-audio-streaming/issues/72)
+- Cannot read property 'play' of undefined [\#64](https://github.com/tlenclos/react-native-audio-streaming/issues/64)
+- react native \>= 0.4 [\#63](https://github.com/tlenclos/react-native-audio-streaming/issues/63)
+- RN 0.39.2 Playback error: Wrong \# arguments [\#59](https://github.com/tlenclos/react-native-audio-streaming/issues/59)
+- \[Android\] ReactNativeAudioStreamingModule.getClassActivity null pointer exception [\#51](https://github.com/tlenclos/react-native-audio-streaming/issues/51)
+
+**Merged pull requests:**
+
+- Fix for Android player notification not closing on app close [\#74](https://github.com/tlenclos/react-native-audio-streaming/pull/74) ([IndrekV](https://github.com/IndrekV))
+- Mention adding path to Header Search Path [\#73](https://github.com/tlenclos/react-native-audio-streaming/pull/73) ([Naoto-Ida](https://github.com/Naoto-Ida))
+- Wrong relative path for Pod [\#71](https://github.com/tlenclos/react-native-audio-streaming/pull/71) ([Naoto-Ida](https://github.com/Naoto-Ida))
+- Use empty string instead of missing StreamTitle. [\#69](https://github.com/tlenclos/react-native-audio-streaming/pull/69) ([hudashot](https://github.com/hudashot))
+- Fix XML in info.plist for iOS xcodeproj [\#68](https://github.com/tlenclos/react-native-audio-streaming/pull/68) ([AdamLiechty](https://github.com/AdamLiechty))
+- Missing step to Pods.xcodeproj file [\#62](https://github.com/tlenclos/react-native-audio-streaming/pull/62) ([jsaucedo](https://github.com/jsaucedo))
+
 ## [v2.3.1](https://github.com/tlenclos/react-native-audio-streaming/tree/v2.3.1) (2016-12-15)
 [Full Changelog](https://github.com/tlenclos/react-native-audio-streaming/compare/v2.3.0...v2.3.1)
 
