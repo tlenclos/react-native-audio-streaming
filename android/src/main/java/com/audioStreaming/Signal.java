@@ -190,8 +190,7 @@ public class Signal extends Service implements OnErrorListener,
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_play, makePendingIntent(BROADCAST_PLAYBACK_PLAY));
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_stop, makePendingIntent(BROADCAST_EXIT));
         notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
-
+    
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel =
                     new NotificationChannel("com.audioStreaming", "Audio Streaming",
@@ -201,7 +200,10 @@ public class Signal extends Service implements OnErrorListener,
             }
 
             notifyBuilder.setChannelId("com.audioStreaming");
+            notifyBuilder.setOnlyAlertOnce(true);
+            
         }
+        notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
     }
 
     private PendingIntent makePendingIntent(String broadcast) {
