@@ -71,7 +71,15 @@ In XCode, in the project navigator, select your project. Add `libReactNativeAudi
   	```
       compile project(':react-native-audio-streaming')
   	```
-  	
+4. If using Proguard then insert the following rules:
+   ```
+   -keep class com.spoledge.aacdecoder.** {
+    *;
+   }
+   ```
+
+   
+   
 ## Usage
 
 ### Playing sound (similar code used by the player UI)
