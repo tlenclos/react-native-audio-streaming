@@ -21,6 +21,8 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     implements ServiceConnection {
 
   public static final String SHOULD_SHOW_NOTIFICATION = "showInAndroidNotifications";
+  public static final String SHOULD_NOTIFICATION_PERSIST = "persistNotification";
+  public static final String AUDIO_TITLE_PLACEHOLDER = "audioTitlePlaceholder";
   private ReactApplicationContext context;
 
   private Class<?> clsActivity;
@@ -28,6 +30,8 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
   private Intent bindIntent;
   private String streamingURL;
   private boolean shouldShowNotification;
+  private boolean shouldNotificationPersist = true;
+  private String audioTitlePlaceholder = "";
 
   public ReactNativeAudioStreamingModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -88,6 +92,12 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
     this.streamingURL = streamingURL;
     this.shouldShowNotification =
         options.hasKey(SHOULD_SHOW_NOTIFICATION) && options.getBoolean(SHOULD_SHOW_NOTIFICATION);
+    if (options.hasKey(SHOULD_NOTIFICATION_PERSIST)) {
+      this.shouldNotificationPersist = options.getBoolean(SHOULD_NOTIFICATION_PERSIST);
+    }
+    if (options.hasKey(AUDIO_TITLE_PLACEHOLDER)) {
+      this.audioTitlePlaceholder = options.getString(AUDIO_TITLE_PLACEHOLDER);
+    }
     signal.setURLStreaming(streamingURL); // URL of MP3 or AAC stream
     playInternal();
   }
@@ -95,7 +105,7 @@ public class ReactNativeAudioStreamingModule extends ReactContextBaseJavaModule
   private void playInternal() {
     signal.play();
     if (shouldShowNotification) {
-      signal.showNotification();
+      signal.showNotification(this.shouldNotificationPersist, this.audioTitlePlaceholder);
     }
   }
 

@@ -167,12 +167,12 @@ public class Signal extends Service implements OnErrorListener,
         }
     }
 
-    public void showNotification() {
+    public void showNotification(Boolean persist, String title) {
         remoteViews = new RemoteViews(context.getPackageName(), R.layout.streaming_notification_player);
         notifyBuilder = new Notification.Builder(this.context)
                 .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off) // TODO Use app icon instead
                 .setContentText("")
-                .setOngoing(true)
+                .setOngoing(persist)
                 .setContent(remoteViews);
 
         Intent resultIntent = new Intent(this.context, this.clsActivity);
@@ -189,6 +189,7 @@ public class Signal extends Service implements OnErrorListener,
         notifyBuilder.setContentIntent(resultPendingIntent);
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_play, makePendingIntent(BROADCAST_PLAYBACK_PLAY));
         remoteViews.setOnClickPendingIntent(R.id.btn_streaming_notification_stop, makePendingIntent(BROADCAST_EXIT));
+        remoteViews.setTextViewText(R.id.song_name_notification, title);
         notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -345,7 +346,7 @@ public class Signal extends Service implements OnErrorListener,
         metaIntent.putExtra("value", value);
         sendBroadcast(metaIntent);
 
-        if (key != null && key.equals("StreamTitle") && remoteViews != null && value != null) {
+        if (key != null && key.equals("StreamTitle") && !value.isEmpty() && remoteViews != null && value != null) {
             remoteViews.setTextViewText(R.id.song_name_notification, value);
             notifyBuilder.setContent(remoteViews);
             notifyManager.notify(NOTIFY_ME_ID, notifyBuilder.build());
