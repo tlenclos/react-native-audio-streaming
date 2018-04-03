@@ -110,6 +110,100 @@ class PlayerUI extends Component {
 }
 ```
 
+### Android Custom Notification Style
+
+To use custom notification style, you need to add a new layout file in your React Native Android Project with name `streaming_notification_player.xml`. In this view, atleast define three components
+  - TextView with id `@+id/song_name_notification`
+  - ImageButton with id `@+id/btn_streaming_notification_play`
+  - ImageButton with id `@+id/btn_streaming_notification_stop`
+
+  example
+
+  ```xml
+    <?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Your App Title"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/song_name_notification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btn_streaming_notification_play"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@android:color/white"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_play" />
+
+                <ImageButton
+                    android:id="@+id/btn_streaming_notification_stop"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@android:color/white"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_stop" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/streaming_icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:src="@mimmap/ic_launcher" />
+    </RelativeLayout>
+
+  ```
+
+### Android Notification Behaviour
+
+The default behaviour for android notification is to persist on notification screen. If you want to make the notification dismissable and add custom song placeholder if the metadata is empty, you can pass additional parameter when playing the audio
+
+```javascript
+  ReactNativeAudioStreaming.play(url, {
+      showIniOSMediaCenter: true,
+      showInAndroidNotifications: true,
+      persistNotification: false, // this will make notification dismissable
+      audioTitlePlaceholder: 'Unknown'
+    })
+
+```
+
 ## TODO
 
 - [ ] Allow to play local files
