@@ -139,7 +139,7 @@ To use custom notification style, you need to add a new layout file in your Reac
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="Komrad Police Scanner"
+                android:text="Your App Title"
                 android:textSize="12sp" />
 
             <TextView
